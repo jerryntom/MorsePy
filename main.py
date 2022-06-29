@@ -64,7 +64,7 @@ class MorseApp(QMainWindow):
         self.chars_value = dict()
         self.morse_value = dict()
 
-        with open("resources\\data\\values.txt", "r", encoding="UTF-8") as f:
+        with open("resources\\data\morseValues.txt", "r", encoding="UTF-8") as f:
             for line in f.readlines():
                 char, value = line.split()
 
@@ -77,20 +77,19 @@ class MorseApp(QMainWindow):
         color: black;
         background-color: white;
         border: 2px solid black;
-        border-radius: 18px;"""
+        border-radius: 18px;
+        padding: 10px;"""
 
         self.style_button = """
         border: 2px solid black;
-        border-radius: 20px;
-        color: black;
-        """
+        border-radius: 18px;
+        color: black;"""
 
         self.style_side_btn = """
         border: 2px solid black;
         background-color: white;
         border-radius: 22px;
-        color: black;
-        """
+        color: black;"""
 
         self.style_scroll_bar = """
         QScrollBar:vertical {
@@ -156,11 +155,11 @@ class MorseApp(QMainWindow):
         self.background.setGeometry(QtCore.QRect(0, 0, 600, 600))
         self.background.setStyleSheet("p")
         self.background.setText("")
-        self.background.setPixmap(QtGui.QPixmap("resources/app_img/background.png"))
+        self.background.setPixmap(QtGui.QPixmap("resources/images/background.png"))
         self.background.setObjectName("background")
         self.background.setMouseTracking(True)
 
-        self.menu_bar.setStyleSheet("background: url(resources/app_img/background.png);")
+        self.menu_bar.setStyleSheet("background: url(resources/images/background.png);")
         self.menu_bar.addAction("Settings", lambda: self.show_settings())
         self.menu_bar.addAction("Help", lambda: self.show_help())
         self.menu_bar.addAction("About", lambda: self.show_about())
@@ -192,17 +191,17 @@ class MorseApp(QMainWindow):
 
         self.read1_morse_btn.setGeometry(QtCore.QRect(552, 64, 45, 45))
         self.read1_morse_btn.setStyleSheet(self.style_side_btn)
-        self.read1_morse_btn.setIcon(QtGui.QIcon("resources\\app_img\\read_morse_btn.png"))
+        self.read1_morse_btn.setIcon(QtGui.QIcon("resources\\images\\readMorseBtn.png"))
         self.read1_morse_btn.setIconSize(QtCore.QSize(25, 25))
 
         self.stop1_read_btn.setGeometry(QtCore.QRect(552, 111, 45, 45))
         self.stop1_read_btn.setStyleSheet(self.style_side_btn)
-        self.stop1_read_btn.setIcon(QtGui.QIcon("resources\\app_img\\stop_read_btn.png"))
+        self.stop1_read_btn.setIcon(QtGui.QIcon("resources\\images\\stopReadBtn.png"))
         self.stop1_read_btn.setIconSize(QtCore.QSize(25, 25))
 
         self.save1_sound_btn.setGeometry(QtCore.QRect(552, 158, 45, 45))
         self.save1_sound_btn.setStyleSheet(self.style_side_btn)
-        self.save1_sound_btn.setIcon(QtGui.QIcon("resources\\app_img\\save_btn.png"))
+        self.save1_sound_btn.setIcon(QtGui.QIcon("resources\\images\\saveSoundBtn.png"))
         self.save1_sound_btn.setIconSize(QtCore.QSize(25, 25))
 
         self.field1.setGeometry(QtCore.QRect(60, 370, 490, 180))
@@ -216,17 +215,17 @@ class MorseApp(QMainWindow):
 
         self.read2_morse_btn.setGeometry(QtCore.QRect(552, 395, 45, 45))
         self.read2_morse_btn.setStyleSheet(self.style_side_btn)
-        self.read2_morse_btn.setIcon(QtGui.QIcon("resources\\app_img\\read_morse_btn.png"))
+        self.read2_morse_btn.setIcon(QtGui.QIcon("resources\\images\\readMorseBtn.png"))
         self.read2_morse_btn.setIconSize(QtCore.QSize(25, 25))
 
         self.stop2_read_btn.setGeometry(QtCore.QRect(552, 442, 45, 45))
         self.stop2_read_btn.setStyleSheet(self.style_side_btn)
-        self.stop2_read_btn.setIcon(QtGui.QIcon("resources\\app_img\\stop_read_btn.png"))
+        self.stop2_read_btn.setIcon(QtGui.QIcon("resources\\images\\stopReadBtn.png"))
         self.stop2_read_btn.setIconSize(QtCore.QSize(25, 25))
 
         self.save2_sound_btn.setGeometry(QtCore.QRect(552, 489, 45, 45))
         self.save2_sound_btn.setStyleSheet(self.style_side_btn)
-        self.save2_sound_btn.setIcon(QtGui.QIcon("resources\\app_img\\save_btn.png"))
+        self.save2_sound_btn.setIcon(QtGui.QIcon("resources\\images\\saveSoundBtn.png"))
         self.save2_sound_btn.setIconSize(QtCore.QSize(25, 25))
 
         MainWindow.setCentralWidget(self.centralwidget)
@@ -407,7 +406,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)
     MainWindow = QtWidgets.QMainWindow()
     MainWindow.setWindowTitle("MorsePy")
-    MainWindow.setWindowIcon(QtGui.QIcon("resources\\app_img\\icon.png"))
+    MainWindow.setWindowIcon(QtGui.QIcon("resources\\images\\icon.png"))
     ui = MorseApp()
     ui.setup_ui(MainWindow)
     MainWindow.show()
