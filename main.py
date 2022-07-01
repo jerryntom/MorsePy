@@ -116,16 +116,22 @@ class MorseApp(QMainWindow):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.background = QtWidgets.QLabel(self.centralwidget)
         self.changeTranslationButton = QtWidgets.QPushButton(self.centralwidget)
-        self.readButton1 = QtWidgets.QPushButton(self.centralwidget)
-        self.stopReadButton1 = QtWidgets.QPushButton(self.centralwidget)
-        self.saveSoundButton1 = QtWidgets.QPushButton(self.centralwidget)
-        self.readButton2 = QtWidgets.QPushButton(self.centralwidget)
-        self.stopReadButton2 = QtWidgets.QPushButton(self.centralwidget)
-        self.saveSoundButton2 = QtWidgets.QPushButton(self.centralwidget)
-        self.field1 = QtWidgets.QTextEdit(self.centralwidget)
+        self.field1 = self.inputBoxHandler(60, 40, 490, 180, "field1")
         self.field1.installEventFilter(self)
-        self.field2 = QtWidgets.QTextEdit(self.centralwidget)
+        self.field2 = self.inputBoxHandler(60, 370, 490, 180, "field2")
         self.field2.installEventFilter(self)
+        self.readButton1 = self.sideButtonHandler(552, 64, 45, 45, "readButton.png")
+        self.readButton1.installEventFilter(self)
+        self.stopReadButton1 = self.sideButtonHandler(552, 111, 45, 45, "stopReadButton.png")
+        self.stopReadButton1.installEventFilter(self)
+        self.saveSoundButton1 = self.sideButtonHandler(552, 158, 45, 45, "saveSoundButton.png")
+        self.saveSoundButton1.installEventFilter(self)
+        self.readButton2 = self.sideButtonHandler(552, 395, 45, 45, "readButton.png")
+        self.readButton2.installEventFilter(self)
+        self.stopReadButton2 = self.sideButtonHandler(552, 442, 45, 45, "stopReadButton.png")
+        self.stopReadButton2.installEventFilter(self)
+        self.saveSoundButton2 = self.sideButtonHandler(552, 489, 45, 45, "saveSoundButton.png")
+        self.saveSoundButton2.installEventFilter(self)
         self.changeTranslationButton.installEventFilter(self)
         self.background.installEventFilter(self)
         self.readButton1.installEventFilter(self)
@@ -175,56 +181,34 @@ class MorseApp(QMainWindow):
 
         self.font.setPointSize(20)
 
-        self.field1.setGeometry(QtCore.QRect(60, 40, 490, 180))
-        self.field1.setFont(self.font)
-        self.field1.setStyleSheet(self.inputBoxStyle)
-        self.field1.setObjectName("field2")
         self.field1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
-        self.field1.verticalScrollBar().setStyleSheet(self.scrollBarStyle)
-        self.field1.horizontalScrollBar().setEnabled(False)
-        self.field1.setAcceptRichText(False)
 
-        self.readButton1.setGeometry(QtCore.QRect(552, 64, 45, 45))
-        self.readButton1.setStyleSheet(self.sideButtonStyle)
-        self.readButton1.setIcon(QtGui.QIcon("resources\\images\\readButton.png"))
-        self.readButton1.setIconSize(QtCore.QSize(25, 25))
-
-        self.stopReadButton1.setGeometry(QtCore.QRect(552, 111, 45, 45))
-        self.stopReadButton1.setStyleSheet(self.sideButtonStyle)
-        self.stopReadButton1.setIcon(QtGui.QIcon("resources\\images\\stopReadButton.png"))
-        self.stopReadButton1.setIconSize(QtCore.QSize(25, 25))
-
-        self.saveSoundButton1.setGeometry(QtCore.QRect(552, 158, 45, 45))
-        self.saveSoundButton1.setStyleSheet(self.sideButtonStyle)
-        self.saveSoundButton1.setIcon(QtGui.QIcon("resources\\images\\saveSoundButton.png"))
-        self.saveSoundButton1.setIconSize(QtCore.QSize(25, 25))
-
-        self.field2.setGeometry(QtCore.QRect(60, 370, 490, 180))
-        self.field2.setFont(self.font)
-        self.field2.setStyleSheet(self.inputBoxStyle)
-        self.field2.setObjectName("field1")
         self.field2.setReadOnly(True)
-        self.field2.verticalScrollBar().setStyleSheet(self.scrollBarStyle)
-        self.field2.horizontalScrollBar().setEnabled(False)
-        self.field2.setAcceptRichText(False)
-
-        self.readButton2.setGeometry(QtCore.QRect(552, 395, 45, 45))
-        self.readButton2.setStyleSheet(self.sideButtonStyle)
-        self.readButton2.setIcon(QtGui.QIcon("resources\\images\\readButton.png"))
-        self.readButton2.setIconSize(QtCore.QSize(25, 25))
-
-        self.stopReadButton2.setGeometry(QtCore.QRect(552, 442, 45, 45))
-        self.stopReadButton2.setStyleSheet(self.sideButtonStyle)
-        self.stopReadButton2.setIcon(QtGui.QIcon("resources\\images\\stopReadButton.png"))
-        self.stopReadButton2.setIconSize(QtCore.QSize(25, 25))
-
-        self.saveSoundButton2.setGeometry(QtCore.QRect(552, 489, 45, 45))
-        self.saveSoundButton2.setStyleSheet(self.sideButtonStyle)
-        self.saveSoundButton2.setIcon(QtGui.QIcon("resources\\images\\saveSoundButton.png"))
-        self.saveSoundButton2.setIconSize(QtCore.QSize(25, 25))
 
         MainWindow.setCentralWidget(self.centralwidget)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def inputBoxHandler(self, positionX, positionY, width, height, name):
+        self.font.setPointSize(20)
+        self.inputBox = QtWidgets.QTextEdit(self.centralwidget)
+        self.inputBox.setGeometry(QtCore.QRect(positionX, positionY, width, height))
+        self.inputBox.setFont(self.font)
+        self.inputBox.setStyleSheet(self.inputBoxStyle)
+        self.inputBox.setObjectName(name)
+        self.inputBox.verticalScrollBar().setStyleSheet(self.scrollBarStyle)
+        self.inputBox.horizontalScrollBar().setEnabled(False)
+        self.inputBox.setAcceptRichText(False)
+        
+        return self.inputBox
+
+    def sideButtonHandler(self, positionX, positionY, width, height, image):
+        self.sideButton = QtWidgets.QPushButton(self.centralwidget)
+        self.sideButton.setGeometry(positionX, positionY, width, height)
+        self.sideButton.setStyleSheet(self.sideButtonStyle)
+        self.sideButton.setIcon(QtGui.QIcon("resources\\images\\{}".format(image)))
+        self.sideButton.setIconSize(QtCore.QSize(25, 25))
+
+        return self.sideButton
 
     def eventFilter(self, obj, event):
         if obj is self.field1:
