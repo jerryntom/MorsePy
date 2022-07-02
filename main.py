@@ -8,14 +8,23 @@ from PyQt6.QtWidgets import QMainWindow, QMenuBar, QWidget
 from PySide6.QtCore import QEvent
 
 if system() == "Windows":
-    appId = u'jerryntom.python.morseapp.3422'
+    appId = u'jerryntom.python.morseapp.020720221'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
 
 
 class MenuWindow(QWidget):
+    """
+    Template for menu window
+
+    Args:
+        QWidget (class): base class for interface objects
+    """
     def __init__(self):
+        """
+        Initiation of variables for MenuWindow class 
+        """
         super().__init__()
         self.setWindowTitle("Window")
         self.setWindowIcon(QtGui.QIcon("resources\\images\\icon.png"))
@@ -29,36 +38,81 @@ class MenuWindow(QWidget):
         self.input.setAcceptRichText(False)
 
 
-class MenuWindow(MenuWindow):
+class SettingsWindow(MenuWindow):
+    """
+    Settings window where you can set some parameters for the app
+
+    Args:
+        MenuWindow (class): base class for menu window
+    """
     def __init__(self):
+        """
+        Initiation of variables for SettingsWindow class 
+        """
         super().__init__()
         self.setWindowTitle("Settings")
         self.input.setPlaceholderText("Okno ustawień")
 
 
 class HelpWindow(MenuWindow):
+    """
+    Help window where you can get some help if in trouble with using the app
+
+    Args:
+        MenuWindow (class): base class for menu window
+    """
     def __init__(self):
+        """
+        Initiation of variables for HelpWindow class 
+        """
         super().__init__()
         self.setWindowTitle("Help")
         self.input.setPlaceholderText("Okno pomocy")
 
 
 class AboutWindow(MenuWindow):
+    """
+    Information about project and author
+
+    Args:
+        MenuWindow (class): base class for menu window
+    """
     def __init__(self):
+        """
+        Initiation of variables for AboutWindow class 
+        """
         super().__init__()
         self.setWindowTitle("About")
         self.input.setPlaceholderText("Okno informacji o projekcie")
 
 
 class BugReportWindow(MenuWindow):
+    """
+    Window for reporting bugs concerning the app
+
+    Args:
+        MenuWindow (class): base class for menu window
+    """
     def __init__(self):
+        """
+        Initiation of variables for BugReportwindow class 
+        """
         super().__init__()
         self.setWindowTitle("Bug report")
         self.input.setPlaceholderText("Okno zgłaszania błędów")
 
 
 class MorseApp(QMainWindow):
+    """
+    Main window/user interface of the app
+
+    Args:
+        QMainWindow (class): main app window
+    """
     def __init__(self):
+        """
+        Initiation of variables for MorseApp class 
+        """
         super().__init__()
 
         self.chars = dict()
@@ -116,10 +170,10 @@ class MorseApp(QMainWindow):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.background = QtWidgets.QLabel(self.centralwidget)
         self.changeTranslationButton = QtWidgets.QPushButton(self.centralwidget)
-        self.field1 = self.inputBoxHandler(60, 40, 490, 180, "field1")
-        self.field1.installEventFilter(self)
-        self.field2 = self.inputBoxHandler(60, 370, 490, 180, "field2")
-        self.field2.installEventFilter(self)
+        self.inputBox1 = self.inputBoxHandler(60, 40, 490, 180, "field1")
+        self.inputBox1.installEventFilter(self)
+        self.inputBox2 = self.inputBoxHandler(60, 370, 490, 180, "field2")
+        self.inputBox2.installEventFilter(self)
         self.readButton1 = self.sideButtonHandler(552, 64, 45, 45, "readButton.png")
         self.readButton1.installEventFilter(self)
         self.stopReadButton1 = self.sideButtonHandler(552, 111, 45, 45, "stopReadButton.png")
@@ -149,6 +203,12 @@ class MorseApp(QMainWindow):
         self.reportWindow = None
 
     def layout(self, mainWindow):
+        """
+        Layout and object setup 
+
+        Args:
+            mainWindow (object): main window of the app  
+        """
         mainWindow.setObjectName("MainWindow")
         mainWindow.setEnabled(True)
         mainWindow.setFixedSize(600, 600)
@@ -161,10 +221,10 @@ class MorseApp(QMainWindow):
         self.background.setMouseTracking(True)
 
         self.menuBar.setStyleSheet("background: url(resources/images/background.png);")
-        self.menuBar.addAction("Settings", lambda: self.showSettings())
-        self.menuBar.addAction("Help", lambda: self.showHelp())
-        self.menuBar.addAction("About", lambda: self.showAbout())
-        self.menuBar.addAction("Bug report", lambda: self.showReport())
+        self.menuBar.addAction("Settings", lambda: self.showSettingsWindow())
+        self.menuBar.addAction("Help", lambda: self.showHelpWindow())
+        self.menuBar.addAction("About", lambda: self.showAboutWindow())
+        self.menuBar.addAction("Bug report", lambda: self.showBugReportWindow())
 
         mainWindow.setMenuBar(self.menuBar)
 
@@ -181,14 +241,27 @@ class MorseApp(QMainWindow):
 
         self.font.setPointSize(20)
 
-        self.field1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
+        self.inputBox1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
 
-        self.field2.setReadOnly(True)
+        self.inputBox2.setReadOnly(True)
 
         MainWindow.setCentralWidget(self.centralwidget)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def inputBoxHandler(self, positionX, positionY, width, height, name):
+        """
+        Template for main input boxes 
+
+        Args:
+            positionX (int): x cordinate of object position
+            positionY (int): y -//- 
+            width (int): width of the object
+            height (int): height -//-
+            name (string): name of the object
+
+        Returns:
+            self.inputBox (object): ready to use input box
+        """
         self.font.setPointSize(20)
         self.inputBox = QtWidgets.QTextEdit(self.centralwidget)
         self.inputBox.setGeometry(QtCore.QRect(positionX, positionY, width, height))
@@ -202,6 +275,19 @@ class MorseApp(QMainWindow):
         return self.inputBox
 
     def sideButtonHandler(self, positionX, positionY, width, height, image):
+        """
+        Template for side buttons 
+
+        Args:
+            positionX (int): x cordinate of object position
+            positionY (int): y -//- 
+            width (int): width of the object
+            height (int): height -//-
+            image (string): name of the file with button image 
+
+        Returns:
+            self.sideButton (object): ready to use side button
+        """
         self.sideButton = QtWidgets.QPushButton(self.centralwidget)
         self.sideButton.setGeometry(positionX, positionY, width, height)
         self.sideButton.setStyleSheet(self.sideButtonStyle)
@@ -211,7 +297,17 @@ class MorseApp(QMainWindow):
         return self.sideButton
 
     def eventFilter(self, obj, event):
-        if obj is self.field1:
+        """
+        Handler of the events happening within the app
+
+        Args:
+            obj (object): object e.g. input box 
+            event (type): type of event occuring
+
+        Returns:
+            reference to eventFilter, method of QEvent class
+        """
+        if obj is self.inputBox1:
             if event.type() == QEvent.Type.KeyRelease:
                 self.polishToMorse()
         elif obj is self.changeTranslationButton:
@@ -232,15 +328,15 @@ class MorseApp(QMainWindow):
                         """
 
                 self.changeTranslationButton.setStyleSheet(self.buttonStyle)
-        elif obj is self.field2:
+        elif obj is self.inputBox2:
             if event.type() == QEvent.Type.KeyRelease:
                 self.morseToPolish()
         elif obj is self.readButton1:
             if event.type() == QEvent.Type.MouseButtonPress:
-                if self.field1.toPlainText() != "":
-                    data = self.field1.toPlainText()
+                if self.inputBox1.toPlainText() != "":
+                    data = self.inputBox1.toPlainText()
                 else:
-                    data = self.field1.placeholderText()
+                    data = self.inputBox1.placeholderText()
 
                 self.readText(data)
         elif obj is self.readButton2:
@@ -275,28 +371,52 @@ class MorseApp(QMainWindow):
 
         return super().eventFilter(obj, event)
 
-    def showSettings(self):
+    def showSettingsWindow(self):
+        """
+        Settings window position functioning
+
+        Returns:
+            None
+        """
         if self.settingsWindow is None:
             self.settingsWindow = MenuWindow()
 
         self.settingsWindow.show()
         self.settingsWindow.activateWindow()
 
-    def showHelp(self):
+    def showHelpWindow(self):
+        """
+        Help window position functioning
+        
+        Returns:
+            None
+        """
         if self.helpWindow is None:
             self.helpWindow = HelpWindow()
 
         self.helpWindow.show()
         self.helpWindow.activateWindow()
 
-    def showAbout(self):
+    def showAboutWindow(self):
+        """
+        About window position functioning
+        
+        Returns:
+            None
+        """
         if self.aboutWindow is None:
             self.aboutWindow = AboutWindow()
 
         self.aboutWindow.show()
         self.aboutWindow.activateWindow()
 
-    def showReport(self):
+    def showBugReportWindow(self):
+        """
+        Report window position functioning
+        
+        Returns:
+            None
+        """
         if self.reportWindow is None:
             self.reportWindow = BugReportWindow()
 
@@ -304,25 +424,37 @@ class MorseApp(QMainWindow):
         self.reportWindow.activateWindow()
 
     def changeTranslationType(self):
-        if self.field1.placeholderText() != "":
-            self.field1.setPlaceholderText("")
-            self.field1.setReadOnly(True)
+        """
+        Handler of translation change, switches between main input boxes
 
-            self.field2.setReadOnly(False)
-            self.field2.setPlaceholderText("Wpisz kod do przetłumaczenia")
+        Returns:
+            None
+        """
+        if self.inputBox1.placeholderText() != "":
+            self.inputBox1.setPlaceholderText("")
+            self.inputBox1.setReadOnly(True)
+
+            self.inputBox2.setReadOnly(False)
+            self.inputBox2.setPlaceholderText("Wpisz kod do przetłumaczenia")
         else:
-            self.field1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
-            self.field1.setReadOnly(False)
+            self.inputBox1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
+            self.inputBox1.setReadOnly(False)
 
-            self.field2.setPlaceholderText("")
-            self.field2.setReadOnly(True)
+            self.inputBox2.setPlaceholderText("")
+            self.inputBox2.setReadOnly(True)
 
-        self.field2.setText("")
-        self.field1.setText("")
+        self.inputBox2.setText("")
+        self.inputBox1.setText("")
 
     def polishToMorse(self):
+        """
+        Polish to morse translation mechanism 
+
+        Returns:
+            None
+        """
         translation = ""
-        self.inputBoxData = self.field1.toPlainText().upper()
+        self.inputBoxData = self.inputBox1.toPlainText().upper()
 
         for char in self.inputBoxData:
             if char == " ":
@@ -333,18 +465,24 @@ class MorseApp(QMainWindow):
             elif char != " ":
                 translation += self.chars[char] + " "
 
-        self.field1.verticalScrollBar().setValue(self.field1.verticalScrollBar().maximum())
-        self.field2.setText(translation)
+        self.inputBox1.verticalScrollBar().setValue(self.inputBox1.verticalScrollBar().maximum())
+        self.inputBox2.setText(translation)
         
     def morseToPolish(self):
+        """
+        Morse to polish translation mechanism
+
+        Returns:
+            None
+        """
         translation = ""
         pattern = "^[.-]{1,7}$"
-        words = self.field2.toPlainText().split(" | ")
+        words = self.inputBox2.toPlainText().split(" | ")
         wordsChars = []
         self.morsePatterCheck = True
-        self.field1.setText("")
+        self.inputBox1.setText("")
 
-        if self.field2.toPlainText() != "":
+        if self.inputBox2.toPlainText() != "":
             for i in range(0, len(words)):
                 words[i] = words[i].strip()
                 wordsChars.append(words[i].split(" "))
@@ -364,10 +502,19 @@ class MorseApp(QMainWindow):
 
                     translation += " "
 
-            self.field1.setText(translation)
-            self.field2.verticalScrollBar().setValue(self.field2.verticalScrollBar().maximum())
+            self.inputBox1.setText(translation)
+            self.inputBox2.verticalScrollBar().setValue(self.inputBox2.verticalScrollBar().maximum())
 
-    def readText(self, data, stop=False):
+    def readText(self, data):
+        """
+        Reading text mechanism 
+
+        Args:
+            data (string): text to read
+        
+        Returns:
+            None
+        """
         voices = self.readEngine.getProperty('voices')
         self.readEngine.setProperty('rate', 150)
         self.readEngine.setProperty('voice', voices[1].id)
@@ -375,9 +522,24 @@ class MorseApp(QMainWindow):
         self.readEngine.runAndWait()
 
     def stopReadText(self):
+        """
+        Stop reading text mechanism
+
+        Returns:
+            None
+        """
         self.readEngine.endLoop()
 
     def saveSoundText(self, data):
+        """
+        Saving sound mechanism 
+
+        Args:
+            data (string): data to save in sound form
+
+        Returns:
+            None
+        """
         print("Saving...")
 
 
