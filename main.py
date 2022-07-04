@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QMainWindow, QMenuBar, QWidget
 from PySide6.QtCore import QEvent
 
 if system() == "Windows":
-    appId = u'jerryntom.python.morseapp.020720221'
+    appId = u'jerryntom.python.morseapp.040720221'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
@@ -134,16 +134,22 @@ class MorseApp(QMainWindow):
         border-radius: 18px;
         padding: 10px;"""
 
-        self.buttonStyle = """
+        self.changeTranslationButtonStyle = """
         border: 2px solid black;
         border-radius: 18px;
         color: black;"""
 
         self.sideButtonStyle = """
-        border: 2px solid black;
-        background-color: white;
-        border-radius: 22px;
-        color: black;"""
+        QPushButton {
+            background-color: transparent;
+            border-radius: 22px;
+        }
+            
+        QToolTip {
+            color: #ffffff; 
+            background-color: #000000;
+            border: 0px;
+        }"""
 
         self.scrollBarStyle = """
         QScrollBar:vertical {
@@ -174,17 +180,17 @@ class MorseApp(QMainWindow):
         self.inputBox1.installEventFilter(self)
         self.inputBox2 = self.inputBoxHandler(60, 370, 490, 180, "field2")
         self.inputBox2.installEventFilter(self)
-        self.readButton1 = self.sideButtonHandler(552, 64, 45, 45, "readButton.png")
+        self.readButton1 = self.sideButtonHandler(552, 62, 45, 45, "readButton.png", "read words")
         self.readButton1.installEventFilter(self)
-        self.stopReadButton1 = self.sideButtonHandler(552, 111, 45, 45, "stopReadButton.png")
+        self.stopReadButton1 = self.sideButtonHandler(552, 109, 45, 45, "stopReadButton.png", "stop reading")
         self.stopReadButton1.installEventFilter(self)
-        self.saveSoundButton1 = self.sideButtonHandler(552, 158, 45, 45, "saveSoundButton.png")
+        self.saveSoundButton1 = self.sideButtonHandler(552, 156, 45, 45, "saveSoundButton.png", "save to sound")
         self.saveSoundButton1.installEventFilter(self)
-        self.readButton2 = self.sideButtonHandler(552, 395, 45, 45, "readButton.png")
+        self.readButton2 = self.sideButtonHandler(552, 393, 45, 45, "readButton.png", "read morse")
         self.readButton2.installEventFilter(self)
-        self.stopReadButton2 = self.sideButtonHandler(552, 442, 45, 45, "stopReadButton.png")
+        self.stopReadButton2 = self.sideButtonHandler(552, 440, 45, 45, "stopReadButton.png", "stop reading")
         self.stopReadButton2.installEventFilter(self)
-        self.saveSoundButton2 = self.sideButtonHandler(552, 489, 45, 45, "saveSoundButton.png")
+        self.saveSoundButton2 = self.sideButtonHandler(552, 487, 45, 45, "saveSoundButton.png", "save to sound")
         self.saveSoundButton2.installEventFilter(self)
         self.changeTranslationButton.installEventFilter(self)
         self.background.installEventFilter(self)
@@ -233,7 +239,7 @@ class MorseApp(QMainWindow):
 
         self.changeTranslationButton.setGeometry(QtCore.QRect(210, 260, 200, 70))
         self.changeTranslationButton.setFont(self.font)
-        self.changeTranslationButton.setStyleSheet(self.buttonStyle)
+        self.changeTranslationButton.setStyleSheet(self.changeTranslationButtonStyle)
         self.changeTranslationButton.setFlat(False)
         self.changeTranslationButton.setObjectName("changeTranslationType")
         self.changeTranslationButton.setText("Zamień")
@@ -274,7 +280,7 @@ class MorseApp(QMainWindow):
         
         return self.inputBox
 
-    def sideButtonHandler(self, positionX, positionY, width, height, image):
+    def sideButtonHandler(self, positionX, positionY, width, height, image, toolTip):
         """
         Template for side buttons 
 
@@ -293,6 +299,7 @@ class MorseApp(QMainWindow):
         self.sideButton.setStyleSheet(self.sideButtonStyle)
         self.sideButton.setIcon(QtGui.QIcon("resources\\images\\{}".format(image)))
         self.sideButton.setIconSize(QtCore.QSize(25, 25))
+        self.sideButton.setToolTip(toolTip)
 
         return self.sideButton
 
@@ -312,22 +319,25 @@ class MorseApp(QMainWindow):
                 self.polishToMorse()
         elif obj is self.changeTranslationButton:
             if event.type() == QEvent.Type.MouseButtonPress:
-                self.buttonStyle = """
-                        border: 2px solid grey;
-                        border-radius: 20px;
-                        color: black;
-                        background-color: rgba(0, 0, 0, 0.13);
-                        """
-
-                self.changeTranslationButton.setStyleSheet(self.buttonStyle)
-            elif event.type() == QEvent.Type.MouseButtonRelease:
-                self.buttonStyle = """
-                        border: 2px solid black;
-                        border-radius: 20px;
-                        color: black;
-                        """
-
-                self.changeTranslationButton.setStyleSheet(self.buttonStyle)
+                self.changeTranslationButtonStyle = """
+                border: 2px solid grey;
+                border-radius: 20px;
+                color: white;
+                background-color: rgba(0, 0, 0, 0.13);"""
+                self.changeTranslationButton.setStyleSheet(self.changeTranslationButtonStyle)
+            elif event.type() == QEvent.Type.HoverEnter:
+                self.changeTranslationButtonStyle = """
+                border: 2px solid grey;
+                border-radius: 20px;
+                color: black;
+                background-color: rgba(0, 0, 0, 0.13);"""
+                self.changeTranslationButton.setStyleSheet(self.changeTranslationButtonStyle)
+            elif event.type() == QEvent.Type.HoverLeave:
+                self.changeTranslationButtonStyle = """
+                border: 2px solid black;
+                border-radius: 18px;
+                color: black;"""
+                self.changeTranslationButton.setStyleSheet(self.changeTranslationButtonStyle)
         elif obj is self.inputBox2:
             if event.type() == QEvent.Type.KeyRelease:
                 self.morseToPolish()
