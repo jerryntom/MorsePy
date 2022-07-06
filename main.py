@@ -6,12 +6,21 @@ from sys import argv, exit
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMainWindow, QMenuBar, QWidget
 from PySide6.QtCore import QEvent
+from playsound import playsound
+import multiprocessing
 
 if system() == "Windows":
     appId = u'jerryntom.python.morseapp.040720221'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
+
+def readMorse(data):
+        for char in data:
+            if char == ".":
+                playsound('resources\\sounds\\morseCodeShort.mp3')
+            elif char == "-":
+                playsound('resources\\sounds\\morseCodeLong.mp3')
 
 
 class MenuWindow(QWidget):
@@ -207,6 +216,7 @@ class MorseApp(QMainWindow):
         self.helpWindow = None
         self.aboutWindow = None
         self.reportWindow = None
+        self.readingProcess = None
 
     def layout(self, mainWindow):
         """
@@ -248,7 +258,6 @@ class MorseApp(QMainWindow):
         self.font.setPointSize(20)
 
         self.inputBox1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
-
         self.inputBox2.setReadOnly(True)
 
         MainWindow.setCentralWidget(self.centralwidget)
@@ -341,43 +350,18 @@ class MorseApp(QMainWindow):
         elif obj is self.inputBox2:
             if event.type() == QEvent.Type.KeyRelease:
                 self.morseToPolish()
-        elif obj is self.readButton1:
+        elif obj is self.readButton1 and self.inputBox1.toPlainText() != "":
             if event.type() == QEvent.Type.MouseButtonPress:
-                if self.inputBox1.toPlainText() != "":
-                    data = self.inputBox1.toPlainText()
-                else:
-                    data = self.inputBox1.placeholderText()
-
-                self.readText(data)
-        elif obj is self.readButton2:
-            pass
-
-            """
+                self.readText(self.inputBox1.toPlainText())
+        elif obj is self.readButton2 and self.inputBox2.toPlainText() != "":
             if event.type() == QEvent.Type.MouseButtonPress:
-                if self.field2.toPlainText() != "":
-                    self.read_text(self.field1.toPlainText())
-                else:
-                    self.read_text(self.field1.placeholderText())"""
+                self.morseCode = self.inputBox2.toPlainText()
+                self.readingProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,))
+                self.readingProcess.start()
         elif obj is self.stopReadButton2:
-            pass
-
-            # if event.type() == QEvent.Type.MouseButtonPress:
-            #    self.stop_read()
-        elif obj is self.stopReadButton1:
-            pass
-
-            # if event.type() == QEvent.Type.MouseButtonPress:
-            #    self.read_text(self.field1.toPlainText(), True)
-        elif obj is self.saveSoundButton2:
-            pass
-
-            # if event.type() == QEvent.Type.MouseButtonPress:
-            #    self.save_sound(self.field2.toPlainText())
-        elif obj is self.saveSoundButton1:
-            pass
-
-            # if event.type() == QEvent.Type.MouseButtonPress:
-            #    self.save_sound(self.field1.toPlainText())
+            if event.type() == QEvent.Type.MouseButtonPress:
+                self.readingProcess.terminate()
+                print("Process terminated!")
 
         return super().eventFilter(obj, event)
 
@@ -531,17 +515,8 @@ class MorseApp(QMainWindow):
         self.readEngine.say(data)
         self.readEngine.runAndWait()
 
-    def stopReadText(self):
-        """
-        Stop reading text mechanism
-
-        Returns:
-            None
-        """
-        self.readEngine.endLoop()
-
     def saveSoundText(self, data):
-        """
+        """ 
         Saving sound mechanism 
 
         Args:
