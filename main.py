@@ -9,18 +9,39 @@ from PySide6.QtCore import QEvent
 from playsound import playsound
 import multiprocessing
 
+readEngine = tts.init()
+
 if system() == "Windows":
-    appId = u'jerryntom.python.morseapp.040720221'
+    appId = u'jerryntom.python.morseapp.110720221'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
 
+
+def readText(textToRead):
+    """
+    Reading text mechanism 
+    
+    Args:
+        data (string): text to read
+    
+    Returns:
+        None
+    """
+    voices = readEngine.getProperty('voices')
+    readEngine.setProperty('rate', 150)
+    readEngine.setProperty('voice', voices[1].id)
+    readEngine.say(textToRead)
+    readEngine.runAndWait()
+    readEngine.stop()
+
+
 def readMorse(data):
-        for char in data:
-            if char == ".":
-                playsound('resources\\sounds\\morseCodeShort.mp3')
-            elif char == "-":
-                playsound('resources\\sounds\\morseCodeLong.mp3')
+    for char in data:
+        if char == ".":
+            playsound('resources\\sounds\\morseCodeShort.mp3')
+        elif char == "-":
+            playsound('resources\\sounds\\morseCodeLong.mp3')
 
 
 class MenuWindow(QWidget):
@@ -210,13 +231,11 @@ class MorseApp(QMainWindow):
         self.saveSoundButton1.installEventFilter(self)
         self.saveSoundButton2.installEventFilter(self)
         self.morsePatterCheck = ""
-        self.readEngine = tts.init()
         self.menuBar = QMenuBar()
         self.settingsWindow = None
         self.helpWindow = None
         self.aboutWindow = None
         self.reportWindow = None
-        self.readingProcess = None
 
     def layout(self, mainWindow):
         """
@@ -351,17 +370,24 @@ class MorseApp(QMainWindow):
             if event.type() == QEvent.Type.KeyRelease:
                 self.morseToPolish()
         elif obj is self.readButton1 and self.inputBox1.toPlainText() != "":
-            if event.type() == QEvent.Type.MouseButtonPress:
-                self.readText(self.inputBox1.toPlainText())
+            if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading text") == False:
+                self.textData = self.inputBox1.toPlainText()
+                self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
+                daemon=True, name="reading text")
+                self.readingTextProcess.start()
         elif obj is self.readButton2 and self.inputBox2.toPlainText() != "":
-            if event.type() == QEvent.Type.MouseButtonPress:
+            if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading morse") == False:
+                print(self.isProcessAlive("reading morse"))
                 self.morseCode = self.inputBox2.toPlainText()
-                self.readingProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,))
-                self.readingProcess.start()
+                self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
+                daemon=True, name="reading morse")
+                self.readingMorseProcess.start()
+        elif obj is self.stopReadButton1:
+            if event.type() == QEvent.Type.MouseButtonPress:
+                self.readingTextProcess.terminate()
         elif obj is self.stopReadButton2:
             if event.type() == QEvent.Type.MouseButtonPress:
-                self.readingProcess.terminate()
-                print("Process terminated!")
+                self.readingMorseProcess.terminate()
 
         return super().eventFilter(obj, event)
 
@@ -499,22 +525,6 @@ class MorseApp(QMainWindow):
             self.inputBox1.setText(translation)
             self.inputBox2.verticalScrollBar().setValue(self.inputBox2.verticalScrollBar().maximum())
 
-    def readText(self, data):
-        """
-        Reading text mechanism 
-
-        Args:
-            data (string): text to read
-        
-        Returns:
-            None
-        """
-        voices = self.readEngine.getProperty('voices')
-        self.readEngine.setProperty('rate', 150)
-        self.readEngine.setProperty('voice', voices[1].id)
-        self.readEngine.say(data)
-        self.readEngine.runAndWait()
-
     def saveSoundText(self, data):
         """ 
         Saving sound mechanism 
@@ -527,6 +537,12 @@ class MorseApp(QMainWindow):
         """
         print("Saving...")
 
+    def isProcessAlive(self, processName):
+        for process in multiprocessing.active_children():
+            if process.name == processName:
+                return True
+
+        return False 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)
