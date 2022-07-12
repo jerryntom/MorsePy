@@ -173,14 +173,14 @@ class InfoWindow(QDialog):
         self.setWindowTitle(self.infoTitle)
         self.setWindowIcon(QtGui.QIcon("resources\\images\\icon.png"))
 
-        infoButton = QtWidgets.QDialogButtonBox.StandardButton.Ok
+        self.infoButton = QtWidgets.QDialogButtonBox.StandardButton.Ok
 
-        self.buttonBox = QtWidgets.QDialogButtonBox(infoButton)
+        self.buttonBox = QtWidgets.QDialogButtonBox(self.infoButton)
         self.buttonBox.accepted.connect(self.accept)
 
         self.layout = QtWidgets.QVBoxLayout()
-        message = QtWidgets.QLabel(self.infoMessage)
-        self.layout.addWidget(message)
+        self.message = QtWidgets.QLabel(self.infoMessage)
+        self.layout.addWidget(self.message)
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
 
@@ -423,21 +423,33 @@ class MorseApp(QMainWindow):
             if event.type() == QEvent.Type.KeyRelease:
                 self.morseToPolish()
         elif obj is self.readButton1 and self.inputBox1.toPlainText() != "":
+            self.textData = self.inputBox1.toPlainText()
+
             if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading text") == False:
-                self.textData = self.inputBox1.toPlainText()
+                self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
+                daemon=True, name="reading text")
+                self.readingTextProcess.start()
+            elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading text") == True:
+                self.readingTextProcess.terminate()
                 self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
                 daemon=True, name="reading text")
                 self.readingTextProcess.start()
         elif obj is self.readButton2 and self.inputBox2.toPlainText() != "":
+            self.morseCode = self.inputBox2.toPlainText()
+
             if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading morse") == False:
-                self.morseCode = self.inputBox2.toPlainText()
                 self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
                 daemon=True, name="reading morse")
                 self.readingMorseProcess.start()
-        elif obj is self.stopReadButton1:
+            elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading morse") == True:
+                self.readingMorseProcess.terminate()
+                self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
+                daemon=True, name="reading morse")
+                self.readingMorseProcess.start()
+        elif obj is self.stopReadButton1 and self.isProcessAlive("reading text") == True:
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.readingTextProcess.terminate()
-        elif obj is self.stopReadButton2:
+        elif obj is self.stopReadButton2 and self.isProcessAlive("reading morse") == True:
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.readingMorseProcess.terminate()
         elif obj is self.saveSoundButton1:
@@ -513,6 +525,10 @@ class MorseApp(QMainWindow):
         self.infoWindow = InfoWindow(infoTitle, infoMessage)
         self.infoWindow.show()
         self.infoWindow.activateWindow()
+        QtCore.QTimer.singleShot(1000, self.closeInfoWindow)
+
+    def closeInfoWindow(self):
+        self.infoWindow.close()
 
     def changeTranslationType(self):
         """
