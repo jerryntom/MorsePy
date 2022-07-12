@@ -4,15 +4,18 @@ from ctypes import windll
 from platform import system
 from sys import argv, exit
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QMenuBar, QWidget
+from PyQt6.QtWidgets import QMainWindow, QMenuBar, QWidget, QDialog
 from PySide6.QtCore import QEvent
 from playsound import playsound
+from pydub import AudioSegment
 import multiprocessing
 
 readEngine = tts.init()
+AudioSegment.converter = "ffmpeg.exe"
+AudioSegment.ffmpeg = "ffmpeg.exe"
 
 if system() == "Windows":
-    appId = u'jerryntom.python.morseapp.110720221'
+    appId = u'jerryntom.python.morseapp.120720221'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
@@ -36,12 +39,41 @@ def readText(textToRead):
     readEngine.stop()
 
 
-def readMorse(data):
-    for char in data:
+def saveTextSound(textToRead):
+    voices = readEngine.getProperty('voices')
+    readEngine.setProperty('rate', 150)
+    readEngine.setProperty('voice', voices[1].id)
+    readEngine.save_to_file(textToRead, 'output\\text.mp3')
+    readEngine.runAndWait()
+    readEngine.stop()
+
+
+def readMorse(morseCode):
+    for char in morseCode:
         if char == ".":
             playsound('resources\\sounds\\morseCodeShort.mp3')
         elif char == "-":
             playsound('resources\\sounds\\morseCodeLong.mp3')
+
+
+def saveMorseCode(morseCode):
+    morseCodeLong = AudioSegment.from_file("resources\\sounds\\morseCodeLong.mp3", format='mp3')
+    morseCodeShort = AudioSegment.from_file("resources\\sounds\\morseCodeShort.mp3", format='mp3')
+    morseCodeSequence = None
+
+    for char in morseCode:
+        if morseCodeSequence is None and char != " ":
+            if char == ".":
+                morseCodeSequence = morseCodeShort
+            elif char == "-":
+                morseCodeSequence = morseCodeLong
+        elif morseCodeSequence is not None:
+            if char == ".":
+                morseCodeSequence += morseCodeShort
+            elif char == "-":
+                morseCodeSequence += morseCodeLong
+
+    morseCodeSequenceOutput = morseCodeSequence.export("output\\morseSequence.mp3", format="mp3")
 
 
 class MenuWindow(QWidget):
@@ -130,6 +162,10 @@ class BugReportWindow(MenuWindow):
         super().__init__()
         self.setWindowTitle("Bug report")
         self.input.setPlaceholderText("Okno zgłaszania błędów")
+
+
+class InfoWindow(QDialog):
+    pass
 
 
 class MorseApp(QMainWindow):
@@ -388,6 +424,20 @@ class MorseApp(QMainWindow):
         elif obj is self.stopReadButton2:
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.readingMorseProcess.terminate()
+        elif obj is self.saveSoundButton1:
+            if event.type() == QEvent.Type.MouseButtonPress and self.inputBox1.toPlainText() != "":
+                self.textData = self.inputBox1.toPlainText()
+                self.saveTextToSoundProcess = multiprocessing.Process(target=saveTextSound, args=(self.textData,), 
+                daemon=True, name="saving text to sound")
+                self.showInfoWindow("Process info", "Text reading is saved to file in output directory")
+                self.saveTextToSoundProcess.start()
+        elif obj is self.saveSoundButton2:
+            if event.type() == QEvent.Type.MouseButtonPress and self.inputBox2.toPlainText() != "":
+                self.morseCode = self.inputBox2.toPlainText()
+                self.saveMorseCodeToSoundProcess = multiprocessing.Process(target=saveMorseCode, args=(self.morseCode,),
+                daemon=True, name="saving morse code to sound")
+                self.showInfoWindow("Process info", "Morse code sequence is saved to file in output directory")
+                self.saveMorseCodeToSoundProcess.start()
 
         return super().eventFilter(obj, event)
 
@@ -442,6 +492,9 @@ class MorseApp(QMainWindow):
 
         self.reportWindow.show()
         self.reportWindow.activateWindow()
+
+    def showInfoWindow(self, windowTitle="123", infoMessage="123"):
+        print("Info window executed")
 
     def changeTranslationType(self):
         """
@@ -525,24 +578,13 @@ class MorseApp(QMainWindow):
             self.inputBox1.setText(translation)
             self.inputBox2.verticalScrollBar().setValue(self.inputBox2.verticalScrollBar().maximum())
 
-    def saveSoundText(self, data):
-        """ 
-        Saving sound mechanism 
-
-        Args:
-            data (string): data to save in sound form
-
-        Returns:
-            None
-        """
-        print("Saving...")
-
     def isProcessAlive(self, processName):
         for process in multiprocessing.active_children():
             if process.name == processName:
                 return True
 
         return False 
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)
