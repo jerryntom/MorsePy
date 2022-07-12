@@ -165,7 +165,24 @@ class BugReportWindow(MenuWindow):
 
 
 class InfoWindow(QDialog):
-    pass
+    def __init__(self, infoTitle, infoMessage, parent=None):
+        self.infoTitle = infoTitle
+        self.infoMessage = infoMessage
+        super().__init__(parent)
+
+        self.setWindowTitle(self.infoTitle)
+        self.setWindowIcon(QtGui.QIcon("resources\\images\\icon.png"))
+
+        infoButton = QtWidgets.QDialogButtonBox.StandardButton.Ok
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(infoButton)
+        self.buttonBox.accepted.connect(self.accept)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        message = QtWidgets.QLabel(self.infoMessage)
+        self.layout.addWidget(message)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
 
 
 class MorseApp(QMainWindow):
@@ -413,7 +430,6 @@ class MorseApp(QMainWindow):
                 self.readingTextProcess.start()
         elif obj is self.readButton2 and self.inputBox2.toPlainText() != "":
             if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading morse") == False:
-                print(self.isProcessAlive("reading morse"))
                 self.morseCode = self.inputBox2.toPlainText()
                 self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
                 daemon=True, name="reading morse")
@@ -493,8 +509,10 @@ class MorseApp(QMainWindow):
         self.reportWindow.show()
         self.reportWindow.activateWindow()
 
-    def showInfoWindow(self, windowTitle="123", infoMessage="123"):
-        print("Info window executed")
+    def showInfoWindow(self, infoTitle="info", infoMessage="info"):
+        self.infoWindow = InfoWindow(infoTitle, infoMessage)
+        self.infoWindow.show()
+        self.infoWindow.activateWindow()
 
     def changeTranslationType(self):
         """
