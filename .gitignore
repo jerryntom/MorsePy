@@ -191,5 +191,8 @@ cython_debug/
 # Ignore app files
 ffmpeg.exe
 ffprobe.exe
+output/text.mp3
+output/morseSequence.mp3
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
+
