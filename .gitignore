@@ -188,4 +188,8 @@ cython_debug/
 # Ignore code-workspaces
 *.code-workspace
 
+# Ignore app files
+ffmpeg.exe
+ffprobe.exe
+
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
