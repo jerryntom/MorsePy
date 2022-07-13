@@ -11,11 +11,11 @@ from pydub import AudioSegment
 import multiprocessing
 
 readEngine = tts.init()
-AudioSegment.converter = "ffmpeg.exe"
-AudioSegment.ffmpeg = "ffmpeg.exe"
+AudioSegment.converter = 'ffmpeg.exe'
+AudioSegment.ffmpeg = 'ffmpeg.exe'
 
-if system() == "Windows":
-    appId = u'jerryntom.python.morseapp.120720221'
+if system() == 'Windows':
+    appId = u'jerryntom.python.morseapp.130720221'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
@@ -40,6 +40,15 @@ def readText(textToRead):
 
 
 def saveTextSound(textToRead):
+    """
+    Saves text reading to sound file 'text.mp3'
+
+    Args:
+        textToRead (str): text to read and save to file
+    
+    Returns:
+        None
+    """
     voices = readEngine.getProperty('voices')
     readEngine.setProperty('rate', 150)
     readEngine.setProperty('voice', voices[1].id)
@@ -49,31 +58,49 @@ def saveTextSound(textToRead):
 
 
 def readMorse(morseCode):
+    """
+    Interprets morse code as sounds and reads it 
+
+    Args:
+        morseCode (str): morse code data
+    
+    Returns:
+        None
+    """
     for char in morseCode:
-        if char == ".":
+        if char == '.':
             playsound('resources\\sounds\\morseCodeShort.mp3')
-        elif char == "-":
+        elif char == '-':
             playsound('resources\\sounds\\morseCodeLong.mp3')
 
 
 def saveMorseCode(morseCode):
-    morseCodeLong = AudioSegment.from_file("resources\\sounds\\morseCodeLong.mp3", format='mp3')
-    morseCodeShort = AudioSegment.from_file("resources\\sounds\\morseCodeShort.mp3", format='mp3')
+    """
+    Interprets morse code as sounds and saves it to file
+
+    Args:
+        morseCode (str): morse code data
+
+    Returns:
+        None
+    """
+    morseCodeLong = AudioSegment.from_file('resources\\sounds\\morseCodeLong.mp3', format='mp3')
+    morseCodeShort = AudioSegment.from_file('resources\\sounds\\morseCodeShort.mp3', format='mp3')
     morseCodeSequence = None
 
     for char in morseCode:
-        if morseCodeSequence is None and char != " ":
-            if char == ".":
+        if morseCodeSequence is None and char != ' ':
+            if char == '.':
                 morseCodeSequence = morseCodeShort
-            elif char == "-":
+            elif char == '-':
                 morseCodeSequence = morseCodeLong
         elif morseCodeSequence is not None:
-            if char == ".":
+            if char == '.':
                 morseCodeSequence += morseCodeShort
-            elif char == "-":
+            elif char == '-':
                 morseCodeSequence += morseCodeLong
 
-    morseCodeSequenceOutput = morseCodeSequence.export("output\\morseSequence.mp3", format="mp3")
+    morseCodeSequenceOutput = morseCodeSequence.export('output\\morseSequence.mp3', format='mp3')
 
 
 class MenuWindow(QWidget):
@@ -88,14 +115,14 @@ class MenuWindow(QWidget):
         Initiation of variables for MenuWindow class 
         """
         super().__init__()
-        self.setWindowTitle("Window")
-        self.setWindowIcon(QtGui.QIcon("resources\\images\\icon.png"))
+        self.setWindowTitle('Window')
+        self.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
         self.setFixedSize(600, 300)
         self.input = QtWidgets.QTextEdit(self)
         self.input.setGeometry(QtCore.QRect(60, 40, 490, 180))
-        self.input.setStyleSheet("font-size: 30px;")
-        self.input.setObjectName("inputBox")
-        self.input.setPlaceholderText("Domyślne okno menu - test")
+        self.input.setStyleSheet('font-size: 30px;')
+        self.input.setObjectName('inputBox')
+        self.input.setPlaceholderText('Domyślne okno menu - test')
         self.input.horizontalScrollBar().setEnabled(False)
         self.input.setAcceptRichText(False)
 
@@ -112,8 +139,8 @@ class SettingsWindow(MenuWindow):
         Initiation of variables for SettingsWindow class 
         """
         super().__init__()
-        self.setWindowTitle("Settings")
-        self.input.setPlaceholderText("Okno ustawień")
+        self.setWindowTitle('Settings')
+        self.input.setPlaceholderText('Okno ustawień')
 
 
 class HelpWindow(MenuWindow):
@@ -128,8 +155,8 @@ class HelpWindow(MenuWindow):
         Initiation of variables for HelpWindow class 
         """
         super().__init__()
-        self.setWindowTitle("Help")
-        self.input.setPlaceholderText("Okno pomocy")
+        self.setWindowTitle('Help')
+        self.input.setPlaceholderText('Okno pomocy')
 
 
 class AboutWindow(MenuWindow):
@@ -144,8 +171,8 @@ class AboutWindow(MenuWindow):
         Initiation of variables for AboutWindow class 
         """
         super().__init__()
-        self.setWindowTitle("About")
-        self.input.setPlaceholderText("Okno informacji o projekcie")
+        self.setWindowTitle('About')
+        self.input.setPlaceholderText('Okno informacji o projekcie')
 
 
 class BugReportWindow(MenuWindow):
@@ -160,18 +187,31 @@ class BugReportWindow(MenuWindow):
         Initiation of variables for BugReportwindow class 
         """
         super().__init__()
-        self.setWindowTitle("Bug report")
-        self.input.setPlaceholderText("Okno zgłaszania błędów")
+        self.setWindowTitle('Bug report')
+        self.input.setPlaceholderText('Okno zgłaszania błędów')
 
 
 class InfoWindow(QDialog):
+    """
+    Window for showing info about processes happening in the background
+
+    Args:
+        QDialog (class): base class for info window
+    """
     def __init__(self, infoTitle, infoMessage, parent=None):
+        """
+        Initiation of variables for InfoWindow class
+
+        Args:
+            infoTitle (str): window title
+            infoMessage (str): window message
+        """
         self.infoTitle = infoTitle
         self.infoMessage = infoMessage
         super().__init__(parent)
 
         self.setWindowTitle(self.infoTitle)
-        self.setWindowIcon(QtGui.QIcon("resources\\images\\icon.png"))
+        self.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
 
         self.infoButton = QtWidgets.QDialogButtonBox.StandardButton.Ok
 
@@ -201,7 +241,7 @@ class MorseApp(QMainWindow):
         self.chars = dict()
         self.morseCode = dict()
 
-        with open("resources\\data\morseValues.txt", "r", encoding="UTF-8") as file:
+        with open('resources\\data\morseValues.txt', 'r', encoding='UTF-8') as file:
             for line in file.readlines():
                 char, value = line.split()
 
@@ -254,26 +294,26 @@ class MorseApp(QMainWindow):
             subcontrol-origin: margin;
         }"""
 
-        self.inputBoxData = ""
+        self.inputBoxData = ''
         self.font = QtGui.QFont()
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.background = QtWidgets.QLabel(self.centralwidget)
         self.changeTranslationButton = QtWidgets.QPushButton(self.centralwidget)
-        self.inputBox1 = self.inputBoxHandler(60, 40, 490, 180, "field1")
+        self.inputBox1 = self.inputBoxHandler(60, 40, 490, 180, 'field1')
         self.inputBox1.installEventFilter(self)
-        self.inputBox2 = self.inputBoxHandler(60, 370, 490, 180, "field2")
+        self.inputBox2 = self.inputBoxHandler(60, 370, 490, 180, 'field2')
         self.inputBox2.installEventFilter(self)
-        self.readButton1 = self.sideButtonHandler(552, 62, 45, 45, "readButton.png", "read words")
+        self.readButton1 = self.sideButtonHandler(552, 62, 45, 45, 'readButton.png', 'read words')
         self.readButton1.installEventFilter(self)
-        self.stopReadButton1 = self.sideButtonHandler(552, 109, 45, 45, "stopReadButton.png", "stop reading")
+        self.stopReadButton1 = self.sideButtonHandler(552, 109, 45, 45, 'stopReadButton.png', 'stop reading')
         self.stopReadButton1.installEventFilter(self)
-        self.saveSoundButton1 = self.sideButtonHandler(552, 156, 45, 45, "saveSoundButton.png", "save to sound")
+        self.saveSoundButton1 = self.sideButtonHandler(552, 156, 45, 45, 'saveSoundButton.png', 'save to sound')
         self.saveSoundButton1.installEventFilter(self)
-        self.readButton2 = self.sideButtonHandler(552, 393, 45, 45, "readButton.png", "read morse")
+        self.readButton2 = self.sideButtonHandler(552, 393, 45, 45, 'readButton.png', 'read morse')
         self.readButton2.installEventFilter(self)
-        self.stopReadButton2 = self.sideButtonHandler(552, 440, 45, 45, "stopReadButton.png", "stop reading")
+        self.stopReadButton2 = self.sideButtonHandler(552, 440, 45, 45, 'stopReadButton.png', 'stop reading')
         self.stopReadButton2.installEventFilter(self)
-        self.saveSoundButton2 = self.sideButtonHandler(552, 487, 45, 45, "saveSoundButton.png", "save to sound")
+        self.saveSoundButton2 = self.sideButtonHandler(552, 487, 45, 45, 'saveSoundButton.png', 'save to sound')
         self.saveSoundButton2.installEventFilter(self)
         self.changeTranslationButton.installEventFilter(self)
         self.background.installEventFilter(self)
@@ -283,7 +323,7 @@ class MorseApp(QMainWindow):
         self.stopReadButton2.installEventFilter(self)
         self.saveSoundButton1.installEventFilter(self)
         self.saveSoundButton2.installEventFilter(self)
-        self.morsePatterCheck = ""
+        self.morsePatterCheck = ''
         self.menuBar = QMenuBar()
         self.settingsWindow = None
         self.helpWindow = None
@@ -297,22 +337,22 @@ class MorseApp(QMainWindow):
         Args:
             mainWindow (object): main window of the app  
         """
-        mainWindow.setObjectName("MainWindow")
+        mainWindow.setObjectName('MainWindow')
         mainWindow.setEnabled(True)
         mainWindow.setFixedSize(600, 600)
 
-        self.centralwidget.setObjectName("centralwidget")
+        self.centralwidget.setObjectName('centralwidget')
 
         self.background.setGeometry(QtCore.QRect(0, 0, 600, 600))
-        self.background.setPixmap(QtGui.QPixmap("resources/images/background.png"))
-        self.background.setObjectName("background")
+        self.background.setPixmap(QtGui.QPixmap('resources/images/background.png'))
+        self.background.setObjectName('background')
         self.background.setMouseTracking(True)
 
-        self.menuBar.setStyleSheet("background: url(resources/images/background.png);")
-        self.menuBar.addAction("Settings", lambda: self.showSettingsWindow())
-        self.menuBar.addAction("Help", lambda: self.showHelpWindow())
-        self.menuBar.addAction("About", lambda: self.showAboutWindow())
-        self.menuBar.addAction("Bug report", lambda: self.showBugReportWindow())
+        self.menuBar.setStyleSheet('background: url(resources/images/background.png);')
+        self.menuBar.addAction('Settings', lambda: self.showSettingsWindow())
+        self.menuBar.addAction('Help', lambda: self.showHelpWindow())
+        self.menuBar.addAction('About', lambda: self.showAboutWindow())
+        self.menuBar.addAction('Bug report', lambda: self.showBugReportWindow())
 
         mainWindow.setMenuBar(self.menuBar)
 
@@ -323,15 +363,14 @@ class MorseApp(QMainWindow):
         self.changeTranslationButton.setFont(self.font)
         self.changeTranslationButton.setStyleSheet(self.changeTranslationButtonStyle)
         self.changeTranslationButton.setFlat(False)
-        self.changeTranslationButton.setObjectName("changeTranslationType")
-        self.changeTranslationButton.setText("Zamień")
+        self.changeTranslationButton.setObjectName('changeTranslationType')
+        self.changeTranslationButton.setText('Zamień')
         self.changeTranslationButton.clicked[bool].connect(self.changeTranslationType)
 
         self.font.setPointSize(20)
 
-        self.inputBox1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
+        self.inputBox1.setPlaceholderText('Wpisz tekst do przetłumaczenia')
         self.inputBox2.setReadOnly(True)
-
         MainWindow.setCentralWidget(self.centralwidget)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -378,7 +417,7 @@ class MorseApp(QMainWindow):
         self.sideButton = QtWidgets.QPushButton(self.centralwidget)
         self.sideButton.setGeometry(positionX, positionY, width, height)
         self.sideButton.setStyleSheet(self.sideButtonStyle)
-        self.sideButton.setIcon(QtGui.QIcon("resources\\images\\{}".format(image)))
+        self.sideButton.setIcon(QtGui.QIcon('resources\\images\\{}'.format(image)))
         self.sideButton.setIconSize(QtCore.QSize(25, 25))
         self.sideButton.setToolTip(toolTip)
 
@@ -422,49 +461,49 @@ class MorseApp(QMainWindow):
         elif obj is self.inputBox2:
             if event.type() == QEvent.Type.KeyRelease:
                 self.morseToPolish()
-        elif obj is self.readButton1 and self.inputBox1.toPlainText() != "":
+        elif obj is self.readButton1 and self.inputBox1.toPlainText() != '':
             self.textData = self.inputBox1.toPlainText()
 
-            if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading text") == False:
+            if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading text') == False:
                 self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
-                daemon=True, name="reading text")
+                daemon=True, name='reading text')
                 self.readingTextProcess.start()
-            elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading text") == True:
+            elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading text') == True:
                 self.readingTextProcess.terminate()
                 self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
-                daemon=True, name="reading text")
+                daemon=True, name='reading text')
                 self.readingTextProcess.start()
-        elif obj is self.readButton2 and self.inputBox2.toPlainText() != "":
+        elif obj is self.readButton2 and self.inputBox2.toPlainText() != '':
             self.morseCode = self.inputBox2.toPlainText()
 
-            if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading morse") == False:
+            if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading morse') == False:
                 self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
-                daemon=True, name="reading morse")
+                daemon=True, name='reading morse')
                 self.readingMorseProcess.start()
-            elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive("reading morse") == True:
+            elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading morse') == True:
                 self.readingMorseProcess.terminate()
                 self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
-                daemon=True, name="reading morse")
+                daemon=True, name='reading morse')
                 self.readingMorseProcess.start()
-        elif obj is self.stopReadButton1 and self.isProcessAlive("reading text") == True:
+        elif obj is self.stopReadButton1 and self.isProcessAlive('reading text') == True:
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.readingTextProcess.terminate()
-        elif obj is self.stopReadButton2 and self.isProcessAlive("reading morse") == True:
+        elif obj is self.stopReadButton2 and self.isProcessAlive('reading morse') == True:
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.readingMorseProcess.terminate()
         elif obj is self.saveSoundButton1:
-            if event.type() == QEvent.Type.MouseButtonPress and self.inputBox1.toPlainText() != "":
+            if event.type() == QEvent.Type.MouseButtonPress and self.inputBox1.toPlainText() != '':
                 self.textData = self.inputBox1.toPlainText()
                 self.saveTextToSoundProcess = multiprocessing.Process(target=saveTextSound, args=(self.textData,), 
-                daemon=True, name="saving text to sound")
-                self.showInfoWindow("Process info", "Text reading is saved to file in output directory")
+                daemon=True, name='saving text to sound')
+                self.showInfoWindow('Process info', 'Text reading is saved to file in output directory')
                 self.saveTextToSoundProcess.start()
         elif obj is self.saveSoundButton2:
-            if event.type() == QEvent.Type.MouseButtonPress and self.inputBox2.toPlainText() != "":
+            if event.type() == QEvent.Type.MouseButtonPress and self.inputBox2.toPlainText() != '':
                 self.morseCode = self.inputBox2.toPlainText()
                 self.saveMorseCodeToSoundProcess = multiprocessing.Process(target=saveMorseCode, args=(self.morseCode,),
-                daemon=True, name="saving morse code to sound")
-                self.showInfoWindow("Process info", "Morse code sequence is saved to file in output directory")
+                daemon=True, name='saving morse code to sound')
+                self.showInfoWindow('Process info', 'Morse code sequence is saved to file in output directory')
                 self.saveMorseCodeToSoundProcess.start()
 
         return super().eventFilter(obj, event)
@@ -521,13 +560,29 @@ class MorseApp(QMainWindow):
         self.reportWindow.show()
         self.reportWindow.activateWindow()
 
-    def showInfoWindow(self, infoTitle="info", infoMessage="info"):
+    def showInfoWindow(self, infoTitle='info', infoMessage='info'):
+        """
+        Shows info window and closes it after 1 second
+
+        Args:
+            infoTitle (str, optional): Window title. Defaults to "info".
+            infoMessage (str, optional): Window message. Defaults to "info".
+
+        Returns:
+            None
+        """
         self.infoWindow = InfoWindow(infoTitle, infoMessage)
         self.infoWindow.show()
         self.infoWindow.activateWindow()
         QtCore.QTimer.singleShot(1000, self.closeInfoWindow)
 
     def closeInfoWindow(self):
+        """
+        Closes window after procedures in showInfoMethod method
+
+        Returns:
+            None
+        """
         self.infoWindow.close()
 
     def changeTranslationType(self):
@@ -537,21 +592,21 @@ class MorseApp(QMainWindow):
         Returns:
             None
         """
-        if self.inputBox1.placeholderText() != "":
-            self.inputBox1.setPlaceholderText("")
+        if self.inputBox1.placeholderText() != '':
+            self.inputBox1.setPlaceholderText('')
             self.inputBox1.setReadOnly(True)
 
             self.inputBox2.setReadOnly(False)
-            self.inputBox2.setPlaceholderText("Wpisz kod do przetłumaczenia")
+            self.inputBox2.setPlaceholderText('Wpisz kod do przetłumaczenia')
         else:
-            self.inputBox1.setPlaceholderText("Wpisz tekst do przetłumaczenia")
+            self.inputBox1.setPlaceholderText('Wpisz tekst do przetłumaczenia')
             self.inputBox1.setReadOnly(False)
 
-            self.inputBox2.setPlaceholderText("")
+            self.inputBox2.setPlaceholderText('')
             self.inputBox2.setReadOnly(True)
 
-        self.inputBox2.setText("")
-        self.inputBox1.setText("")
+        self.inputBox2.setText('')
+        self.inputBox1.setText('')
 
     def polishToMorse(self):
         """
@@ -560,17 +615,17 @@ class MorseApp(QMainWindow):
         Returns:
             None
         """
-        translation = ""
+        translation = ''
         self.inputBoxData = self.inputBox1.toPlainText().upper()
 
         for char in self.inputBoxData:
-            if char == " ":
-                translation += " | "
+            if char == ' ':
+                translation += ' | '
             elif char not in self.chars.keys():
-                translation = "Znaleziono nieznany znak"
+                translation = 'Znaleziono nieznany znak'
                 break
-            elif char != " ":
-                translation += self.chars[char] + " "
+            elif char != ' ':
+                translation += self.chars[char] + ' '
 
         self.inputBox1.verticalScrollBar().setValue(self.inputBox1.verticalScrollBar().maximum())
         self.inputBox2.setText(translation)
@@ -582,17 +637,17 @@ class MorseApp(QMainWindow):
         Returns:
             None
         """
-        translation = ""
-        pattern = "^[.-]{1,7}$"
-        words = self.inputBox2.toPlainText().split(" | ")
+        translation = ''
+        pattern = '^[.-]{1,7}$'
+        words = self.inputBox2.toPlainText().split(' | ')
         wordsChars = []
         self.morsePatterCheck = True
-        self.inputBox1.setText("")
+        self.inputBox1.setText('')
 
-        if self.inputBox2.toPlainText() != "":
+        if self.inputBox2.toPlainText() != '':
             for i in range(0, len(words)):
                 words[i] = words[i].strip()
-                wordsChars.append(words[i].split(" "))
+                wordsChars.append(words[i].split(' '))
 
             for word in wordsChars:
                 if not self.morsePatterCheck:
@@ -604,15 +659,24 @@ class MorseApp(QMainWindow):
                         if self.morsePatterCheck and char in self.morseCode.keys():
                             translation += self.morseCode[char]
                         elif not self.morsePatterCheck or char not in self.morseCode.keys():
-                            translation = "Błędne kodowanie!"
+                            translation = 'Błędne kodowanie!'
                             break
 
-                    translation += " "
+                    translation += ' '
 
             self.inputBox1.setText(translation)
             self.inputBox2.verticalScrollBar().setValue(self.inputBox2.verticalScrollBar().maximum())
 
     def isProcessAlive(self, processName):
+        """
+        Checks is certain process is alive
+
+        Args:
+            processName (str): process name
+
+        Returns:
+            boolean: True if process alive and False if not
+        """
         for process in multiprocessing.active_children():
             if process.name == processName:
                 return True
@@ -623,8 +687,8 @@ class MorseApp(QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)
     MainWindow = QtWidgets.QMainWindow()
-    MainWindow.setWindowTitle("MorsePy")
-    MainWindow.setWindowIcon(QtGui.QIcon("resources\\images\\icon.png"))
+    MainWindow.setWindowTitle('MorsePy')
+    MainWindow.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
     userInterface = MorseApp()
     userInterface.layout(MainWindow)
     MainWindow.show()
