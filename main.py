@@ -91,7 +91,6 @@ def saveMorseCode(morseCode):
     Returns:
         None
     """
-    print(morseCode)
     pathToSave = 'output\\morseSequence.mp3'
     morseCodeLong = AudioSegment.from_file('resources\\sounds\\morseCodeLong.mp3', format='mp3')
     morseCodeShort = AudioSegment.from_file('resources\\sounds\\morseCodeShort.mp3', format='mp3')
