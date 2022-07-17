@@ -193,4 +193,8 @@ cython_debug/
 ffmpeg.exe
 ffprobe.exe
 
+# Output
+
+*.mp3
+
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode

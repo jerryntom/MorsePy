@@ -9,13 +9,14 @@ from PySide6.QtCore import QEvent
 from playsound import playsound
 from pydub import AudioSegment
 import multiprocessing
+from os import path
 
 readEngine = tts.init()
 AudioSegment.converter = 'ffmpeg.exe'
 AudioSegment.ffmpeg = 'ffmpeg.exe'
 
 if system() == 'Windows':
-    appId = u'jerryntom.python.morseapp.130720221'
+    appId = u'jerryntom.python.morseapp.170720221'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
@@ -49,10 +50,16 @@ def saveTextSound(textToRead):
     Returns:
         None
     """
+    pathToSave = 'output\\text.mp3'
+
     voices = readEngine.getProperty('voices')
     readEngine.setProperty('rate', 150)
     readEngine.setProperty('voice', voices[1].id)
-    readEngine.save_to_file(textToRead, 'output\\text.mp3')
+
+    if path.exists('output\\') == False:
+        pathToSave = 'text.mp3'
+
+    readEngine.save_to_file(textToRead, pathToSave)
     readEngine.runAndWait()
     readEngine.stop()
 
@@ -84,9 +91,14 @@ def saveMorseCode(morseCode):
     Returns:
         None
     """
+    print(morseCode)
+    pathToSave = 'output\\morseSequence.mp3'
     morseCodeLong = AudioSegment.from_file('resources\\sounds\\morseCodeLong.mp3', format='mp3')
     morseCodeShort = AudioSegment.from_file('resources\\sounds\\morseCodeShort.mp3', format='mp3')
     morseCodeSequence = None
+
+    if path.exists('output\\') == False:
+        pathToSave = 'morseSequence.mp3'
 
     for char in morseCode:
         if morseCodeSequence is None and char != ' ':
@@ -100,7 +112,7 @@ def saveMorseCode(morseCode):
             elif char == '-':
                 morseCodeSequence += morseCodeLong
 
-    morseCodeSequenceOutput = morseCodeSequence.export('output\\morseSequence.mp3', format='mp3')
+    morseCodeSequenceOutput = morseCodeSequence.export(pathToSave, format='mp3')
 
 
 class MenuWindow(QWidget):
@@ -204,7 +216,7 @@ class InfoWindow(QDialog):
 
         Args:
             infoTitle (str): window title
-            infoMessage (str): window message
+            infoMessage (str): info message
         """
         self.infoTitle = infoTitle
         self.infoMessage = infoMessage
@@ -225,6 +237,39 @@ class InfoWindow(QDialog):
         self.setLayout(self.layout)
 
 
+class ErrorWindow(QDialog):
+    """
+    Window for showing info about occuring errors
+
+    Args:
+        QDialog (class): base class for info window
+    """
+    def __init__(self, errorTitle, errorMessage, parent=None):
+        """
+        Initiation of variables for InfoWindow class
+
+        Args:
+            errorTitle (str): window title
+            errorMessage (str): error message
+        """
+        self.errorTitle = errorTitle
+        self.errorMessage = errorMessage
+        super().__init__(parent)
+
+        self.setWindowTitle(self.errorTitle)
+        self.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
+
+        self.infoButton = QtWidgets.QDialogButtonBox.StandardButton.Ok
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(self.infoButton)
+        self.buttonBox.accepted.connect(self.accept)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.message = QtWidgets.QLabel(self.errorMessage)
+        self.layout.addWidget(self.message)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
 class MorseApp(QMainWindow):
     """
     Main window/user interface of the app
@@ -240,8 +285,9 @@ class MorseApp(QMainWindow):
 
         self.chars = dict()
         self.morseCode = dict()
+        self.fileStructureValidation()
 
-        with open('resources\\data\morseValues.txt', 'r', encoding='UTF-8') as file:
+        with open('resources\\data\\morseValues.txt', 'r', encoding='UTF-8') as file:
             for line in file.readlines():
                 char, value = line.split()
 
@@ -329,6 +375,36 @@ class MorseApp(QMainWindow):
         self.helpWindow = None
         self.aboutWindow = None
         self.reportWindow = None
+
+    def fileStructureValidation(self):
+        """
+        Checks if every file is one its place and exits the app if not
+
+        Returns:
+            None
+        """
+        filePaths = {'ffmpeg.exe': 1, 'ffprobe.exe': 1, 
+        'resources\\data\\morseValues.txt': 1, 'resources\\images\\background.png': 1,
+        'resources\\images\\readButton.png': 1, 'resources\\images\\saveSoundButton.png': 1, 
+        'resources\\images\\stopReadButton.png': 1, 'resources\\sounds\\morseCodeLong.mp3': 1, 
+        'resources\\sounds\\morseCodeShort.mp3': 1, 'resources\\images\\icon.png': 1}
+
+        missingFiles = """Some files are missing:\n\n"""
+    
+        for key in filePaths.keys():
+            if path.exists(key) == False:
+                filePaths[key] = 0
+                missingFiles += key
+                missingFiles += "\n"
+
+        if missingFiles != """Some files are missing:\n\n""":
+            missingFiles += "\nYou can find them in project repository"
+            missingFiles += "\nhttps://github.com/jerryntom/morsepy"
+            errorWindow = ErrorWindow("Missing files error", missingFiles)
+            errorWindow.show()
+            errorWindow.activateWindow()
+            errorWindow.exec()
+            exit(-1)
 
     def layout(self, mainWindow):
         """
@@ -461,7 +537,8 @@ class MorseApp(QMainWindow):
         elif obj is self.inputBox2:
             if event.type() == QEvent.Type.KeyRelease:
                 self.morseToPolish()
-        elif obj is self.readButton1 and self.inputBox1.toPlainText() != '':
+        elif obj is self.readButton1 and self.inputBox1.toPlainText() != '' \
+        and self.inputBox1.toPlainText() != 'Błędne kodowanie ':
             self.textData = self.inputBox1.toPlainText()
 
             if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading text') == False:
@@ -473,16 +550,17 @@ class MorseApp(QMainWindow):
                 self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
                 daemon=True, name='reading text')
                 self.readingTextProcess.start()
-        elif obj is self.readButton2 and self.inputBox2.toPlainText() != '':
-            self.morseCode = self.inputBox2.toPlainText()
+        elif obj is self.readButton2 and self.inputBox2.toPlainText() != '' \
+        and self.inputBox2.toPlainText() != 'Znaleziono nieznany znak':
+            self.morseCodeData = self.inputBox2.toPlainText()
 
             if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading morse') == False:
-                self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
+                self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCodeData,), 
                 daemon=True, name='reading morse')
                 self.readingMorseProcess.start()
             elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading morse') == True:
                 self.readingMorseProcess.terminate()
-                self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCode,), 
+                self.readingMorseProcess = multiprocessing.Process(target=readMorse, args=(self.morseCodeData,), 
                 daemon=True, name='reading morse')
                 self.readingMorseProcess.start()
         elif obj is self.stopReadButton1 and self.isProcessAlive('reading text') == True:
@@ -491,19 +569,19 @@ class MorseApp(QMainWindow):
         elif obj is self.stopReadButton2 and self.isProcessAlive('reading morse') == True:
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.readingMorseProcess.terminate()
-        elif obj is self.saveSoundButton1:
+        elif obj is self.saveSoundButton1 and self.inputBox1.toPlainText() != 'Błędne kodowanie ':
             if event.type() == QEvent.Type.MouseButtonPress and self.inputBox1.toPlainText() != '':
                 self.textData = self.inputBox1.toPlainText()
                 self.saveTextToSoundProcess = multiprocessing.Process(target=saveTextSound, args=(self.textData,), 
                 daemon=True, name='saving text to sound')
-                self.showInfoWindow('Process info', 'Text reading is saved to file in output directory')
+                self.showInfoWindow('Text reading', 'Text reading is saved to file in output directory')
                 self.saveTextToSoundProcess.start()
-        elif obj is self.saveSoundButton2:
+        elif obj is self.saveSoundButton2 and self.inputBox2.toPlainText() != 'Znaleziono nieznany znak':
             if event.type() == QEvent.Type.MouseButtonPress and self.inputBox2.toPlainText() != '':
-                self.morseCode = self.inputBox2.toPlainText()
-                self.saveMorseCodeToSoundProcess = multiprocessing.Process(target=saveMorseCode, args=(self.morseCode,),
+                self.morseCodeData = self.inputBox2.toPlainText()
+                self.saveMorseCodeToSoundProcess = multiprocessing.Process(target=saveMorseCode, args=(self.morseCodeData,),
                 daemon=True, name='saving morse code to sound')
-                self.showInfoWindow('Process info', 'Morse code sequence is saved to file in output directory')
+                self.showInfoWindow('Morse code reading', 'Morse code sequence is saved to file in output directory')
                 self.saveMorseCodeToSoundProcess.start()
 
         return super().eventFilter(obj, event)
@@ -659,7 +737,7 @@ class MorseApp(QMainWindow):
                         if self.morsePatterCheck and char in self.morseCode.keys():
                             translation += self.morseCode[char]
                         elif not self.morsePatterCheck or char not in self.morseCode.keys():
-                            translation = 'Błędne kodowanie!'
+                            translation = 'Błędne kodowanie'
                             break
 
                     translation += ' '
