@@ -22,7 +22,7 @@ else:
     pass
 
 
-def readText(textToRead):
+def readText(textToRead, speed):
     """
     Reading text mechanism 
     
@@ -33,14 +33,14 @@ def readText(textToRead):
         None
     """
     voices = readEngine.getProperty('voices')
-    readEngine.setProperty('rate', 150)
+    readEngine.setProperty('rate', speed)
     readEngine.setProperty('voice', voices[1].id)
     readEngine.say(textToRead)
     readEngine.runAndWait()
     readEngine.stop()
 
 
-def saveTextSound(textToRead):
+def saveTextSound(textToRead, speed):
     """
     Saves text reading to sound file 'text.mp3'
 
@@ -53,7 +53,7 @@ def saveTextSound(textToRead):
     pathToSave = 'output\\text.mp3'
 
     voices = readEngine.getProperty('voices')
-    readEngine.setProperty('rate', 150)
+    readEngine.setProperty('rate', speed)
     readEngine.setProperty('voice', voices[1].id)
 
     if path.exists('output\\') == False:
@@ -129,13 +129,6 @@ class MenuWindow(QWidget):
         self.setWindowTitle('Window')
         self.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
         self.setFixedSize(600, 300)
-        self.input = QtWidgets.QTextEdit(self)
-        self.input.setGeometry(QtCore.QRect(60, 40, 490, 180))
-        self.input.setStyleSheet('font-size: 30px;')
-        self.input.setObjectName('inputBox')
-        self.input.setPlaceholderText('Domyślne okno menu - test')
-        self.input.horizontalScrollBar().setEnabled(False)
-        self.input.setAcceptRichText(False)
 
 
 class SettingsWindow(MenuWindow):
@@ -150,9 +143,74 @@ class SettingsWindow(MenuWindow):
         Initiation of variables for SettingsWindow class 
         """
         super().__init__()
-        self.setWindowTitle('Settings')
-        self.input.setPlaceholderText('Okno ustawień')
 
+        self.sliderStyle = """
+        QSlider::groove:horizontal {
+        border: 1px solid;
+        height: 10px;
+        margin: 0px;
+        }
+
+        QSlider::handle:horizontal {
+            background-color: black;
+            border: 1px solid;
+            height: 2px;
+            width: 5px;
+        }"""
+
+        self.textReadingSpeedLabel = QtWidgets.QLabel(self)
+        self.languageLabel = QtWidgets.QLabel(self)
+        self.settingsFont = QtGui.QFont()
+        self.textReadingSpeedSlider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
+        self.textReadingSpeedSliderLabel = QtWidgets.QLabel(self)
+        self.textReadingSpeed = 100
+        
+    def settingsLayout(self):
+        self.settings = {}
+        
+        with open('resources\\data\\settings.txt', 'r') as settingsFile:
+            for line in settingsFile.readlines():
+                line = line.split()
+                self.settings[line[0]] = line[1] 
+
+        self.setWindowTitle('MorsePy - settings')
+
+        self.settingsFont.setPointSize(30)
+        self.settingsFont.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferAntialias)
+
+        self.textReadingSpeedLabel.setText('Text reading speed')
+        self.textReadingSpeedLabel.setGeometry(QtCore.QRect(50, 50, 50, 50))
+        self.textReadingSpeedLabel.setFont(self.settingsFont)
+        self.textReadingSpeedLabel.adjustSize()
+
+        self.languageLabel.setText('Language')
+        self.languageLabel.setGeometry(QtCore.QRect(50, 100, 50, 50))
+        self.languageLabel.setFont(self.settingsFont)
+        self.languageLabel.adjustSize()
+
+        self.textReadingSpeedSlider.setGeometry(QtCore.QRect(400, 70, 100, 25))
+        self.textReadingSpeedSlider.setMinimum(100)
+        self.textReadingSpeedSlider.setMaximum(300)
+        self.textReadingSpeedSlider.setSingleStep(1)
+        self.textReadingSpeedSlider.setValue(int(self.settings['textReadingSpeed']))
+        self.textReadingSpeedSlider.valueChanged.connect(self.changeTextReadingSpeed)
+        self.textReadingSpeedSlider.setStyleSheet(self.sliderStyle)
+
+        self.sliderFont = self.textReadingSpeedSliderLabel.font()
+        self.sliderFont.setBold(True)
+        self.sliderFont.setPointSize(15)
+
+        self.textReadingSpeedSliderLabel.setText(str(self.textReadingSpeedSlider.value()))
+        self.textReadingSpeedSliderLabel.setGeometry(QtCore.QRect(440, 50, 0, 0))
+        self.textReadingSpeedSliderLabel.setFont(self.sliderFont)
+        self.textReadingSpeedSliderLabel.adjustSize()
+
+    def changeTextReadingSpeed(self):
+        self.textReadingSpeed = self.textReadingSpeedSlider.value()
+        self.textReadingSpeedSliderLabel.setText(str(self.textReadingSpeed))
+
+        with open('resources\\data\\settings.txt', 'w') as settingsFile:
+            settingsFile.write('textReadingSpeed' + ' ' + str(self.textReadingSpeed))
 
 class HelpWindow(MenuWindow):
     """
@@ -167,7 +225,6 @@ class HelpWindow(MenuWindow):
         """
         super().__init__()
         self.setWindowTitle('Help')
-        self.input.setPlaceholderText('Okno pomocy')
 
 
 class AboutWindow(MenuWindow):
@@ -183,7 +240,6 @@ class AboutWindow(MenuWindow):
         """
         super().__init__()
         self.setWindowTitle('About')
-        self.input.setPlaceholderText('Okno informacji o projekcie')
 
 
 class BugReportWindow(MenuWindow):
@@ -199,7 +255,6 @@ class BugReportWindow(MenuWindow):
         """
         super().__init__()
         self.setWindowTitle('Bug report')
-        self.input.setPlaceholderText('Okno zgłaszania błędów')
 
 
 class InfoWindow(QDialog):
@@ -539,15 +594,19 @@ class MorseApp(QMainWindow):
         elif obj is self.readButton1 and self.inputBox1.toPlainText() != '' \
         and self.inputBox1.toPlainText() != 'Błędne kodowanie ':
             self.textData = self.inputBox1.toPlainText()
+            self.textReadingSpeed = 100
 
+            if self.settingsWindow is not None:
+                self.textReadingSpeed = self.settingsWindow.textReadingSpeedSlider.value()
+            
             if event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading text') == False:
-                self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
-                daemon=True, name='reading text')
+                self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData, 
+                self.textReadingSpeed,), daemon=True, name='reading text')
                 self.readingTextProcess.start()
             elif event.type() == QEvent.Type.MouseButtonPress and self.isProcessAlive('reading text') == True:
                 self.readingTextProcess.terminate()
-                self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData,), 
-                daemon=True, name='reading text')
+                self.readingTextProcess = multiprocessing.Process(target=readText, args=(self.textData, 
+                self.textReadingSpeed,), daemon=True, name='reading text')
                 self.readingTextProcess.start()
         elif obj is self.readButton2 and self.inputBox2.toPlainText() != '' \
         and self.inputBox2.toPlainText() != 'Znaleziono nieznany znak':
@@ -569,17 +628,22 @@ class MorseApp(QMainWindow):
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.readingMorseProcess.terminate()
         elif obj is self.saveSoundButton1 and self.inputBox1.toPlainText() != 'Błędne kodowanie ':
-            if event.type() == QEvent.Type.MouseButtonPress and self.inputBox1.toPlainText() != '':
-                self.textData = self.inputBox1.toPlainText()
-                self.saveTextToSoundProcess = multiprocessing.Process(target=saveTextSound, args=(self.textData,), 
-                daemon=True, name='saving text to sound')
+            self.textData = self.inputBox1.toPlainText()
+            self.textReadingSpeed = 100
+
+            if self.settingsWindow is not None:
+                self.textReadingSpeed = self.settingsWindow.textReadingSpeedSlider.value()
+
+            if event.type() == QEvent.Type.MouseButtonPress and self.textData != '':
+                self.saveTextToSoundProcess = multiprocessing.Process(target=saveTextSound, args=(self.textData, 
+                self.textReadingSpeed,), daemon=True, name='saving text to sound')
                 self.showInfoWindow('Text reading', 'Text reading is saved to file in output directory')
                 self.saveTextToSoundProcess.start()
         elif obj is self.saveSoundButton2 and self.inputBox2.toPlainText() != 'Znaleziono nieznany znak':
             if event.type() == QEvent.Type.MouseButtonPress and self.inputBox2.toPlainText() != '':
                 self.morseCodeData = self.inputBox2.toPlainText()
-                self.saveMorseCodeToSoundProcess = multiprocessing.Process(target=saveMorseCode, args=(self.morseCodeData,),
-                daemon=True, name='saving morse code to sound')
+                self.saveMorseCodeToSoundProcess = multiprocessing.Process(target=saveMorseCode, 
+                args=(self.morseCodeData,), daemon=True, name='saving morse code to sound')
                 self.showInfoWindow('Morse code reading', 'Morse code sequence is saved to file in output directory')
                 self.saveMorseCodeToSoundProcess.start()
 
@@ -593,9 +657,10 @@ class MorseApp(QMainWindow):
             None
         """
         if self.settingsWindow is None:
-            self.settingsWindow = MenuWindow()
-
+            self.settingsWindow = SettingsWindow()
+        
         self.settingsWindow.show()
+        self.settingsWindow.settingsLayout()
         self.settingsWindow.activateWindow()
 
     def showHelpWindow(self):
