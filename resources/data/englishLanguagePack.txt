@@ -1,0 +1,21 @@
+voice;0
+textInputPlaceholder;Enter text to input
+buttonModeChangeText;Switch
+morseInputPlaceholder;Enter morse code to translate
+settingsMenuBar;Settings
+helpMenuBar;Help
+aboutMenuBar;About
+reportMenuBar;Report
+settingsSpeedLabel;Text reading speed
+settingsLanguageLabel;Language
+settingsWindowTitle;MorsePy - settings
+helpWindowTitle;MorsePy - help
+aboutWindowTitle;MorsePy - about
+reportWindowTitle;MorsePy - report
+textTranslateError;Some chars are impossible to translate
+morseCodeTranslateError;Invalid Morse Code
+textReadingProcessInfoTitle;Text reading
+textReadingProcessInfoMessage;Text reading is saved to file in output directory
+morseReadingProcessInfoTitle;Morse code reading
+morseReadingProcessInfoMessage;Morse code sequence is saved to file in output directory
+languageChangeInfo;To apply language change restart the app
