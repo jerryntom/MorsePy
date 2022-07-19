@@ -1,1 +1,2 @@
 textReadingSpeed 150
+language Polski
