@@ -3,13 +3,11 @@ textInputPlaceholder;Wpisz tekst do przetłumaczenia
 buttonModeChangeText;Zamień
 morseInputPlaceholder;Wpisz kod do przetłumaczenia
 settingsMenuBar;Ustawienia
-helpMenuBar;Pomoc
 aboutMenuBar;O projekcie
 reportMenuBar;Zgłoś
 settingsSpeedLabel;Prędkość czytania
 settingsLanguageLabel;Język
 settingsWindowTitle;MorsePy - ustawienia
-helpWindowTitle;MorsePy - pomoc
 aboutWindowTitle;MorsePy - o projekcie
 reportWindowTitle;MorsePy - zgłoś
 textTranslateError;Nie można przetłumaczyć wszystkich znaków
@@ -19,3 +17,8 @@ textReadingProcessInfoMessage;Przeczytany tekst został zapisany do pliku w fold
 morseReadingProcessInfoTitle;Czytanie kodu Morse'a
 morseReadingProcessInfoMessage;Kod Morse'a został zapisany do pliku w folderze output
 languageChangeInfo;By język się zmienił zrestartuj program
+contributionLabel;Stworzone przez
+repositoryInfoLabel;Więcej informacji o projekcie
+repositoryLinkLabel;repozytorium
+creatorInfoLabel;Twórca
+creatorInfoLinkLabel;profil
