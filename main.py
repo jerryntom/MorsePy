@@ -13,8 +13,7 @@ from pydub import AudioSegment
 import multiprocessing
 from os import path
 
-appVersion = '250720221'
-githubAccess = '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'
+appVersion = '300720221'
 language = 'English'
 textReadingSpeed = 100
 languagePackFile = 'englishLanguagePack.txt'
@@ -22,6 +21,38 @@ languageData = {}
 readEngine = tts.init()
 AudioSegment.converter = 'ffmpeg.exe'
 AudioSegment.ffmpeg = 'ffmpeg.exe'
+
+inputBoxStyle = """
+    color: black;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 18px;
+    padding: 10px;"""
+
+scrollBarStyle = """
+    QScrollBar:vertical {
+        border: none;
+        background: none;
+        height: 0;
+        margin: 0 0 0 0;
+    }
+    
+    QScrollBar::handle:vertical {
+        background: none;
+        min-width: 0;
+    }
+    
+    QScrollBar::add-line:vertical {
+        background: none;
+        width: 0;
+        subcontrol-position: right;
+        subcontrol-origin: margin;
+    }"""
+
+mainButtonStyle = """
+        border: 2px solid black;
+        border-radius: 18px;
+        color: black;"""
 
 with open('resources\\data\\settings.txt', 'r') as settingsFile:
     for line in settingsFile.readlines():
@@ -41,7 +72,7 @@ with open('resources\\data\\{}'.format(languagePackFile), 'r', encoding='UTF-8')
         languageData[line[0]] = line[1].strip()
     
 if system() == 'Windows':
-    appId = u'jerryntom.python.morseapp.220720221'
+    appId = u'jerryntom.python.morseapp.{}'.format(appVersion)
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 else:
     pass
@@ -144,12 +175,12 @@ def saveMorseCode(morseCode):
 
 
 def createIssue(title, body):
-    headers = {'Authorization': 'token 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'}
+    headers = {'Authorization': 'token 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'}
     url = 'https://api.github.com/repos/jerryntom/morsepy/issues'
     dataPack = [{'title': title, 'body': body}]
 
     for data in dataPack:
-        requests.post(url,data=json.dumps(data),headers=headers)
+        requests.post(url, data=json.dumps(data), headers=headers)
     
 
 class MenuWindow(QWidget):
@@ -446,6 +477,115 @@ class ReportWindow(MenuWindow):
         """
         super().__init__()
         self.setWindowTitle(languageData['reportWindowTitle'])
+        self.__reportWindowFont = QtGui.QFont()
+        self.__reportTipLabel = QtWidgets.QLabel(self)
+        self.__issueTitleInput = self.__inputBoxHandler(10, 50, 400, 70, 'issue title input')
+        self.__issueDescriptionInput = self.__inputBoxHandler(10, 140, 400, 100, 'issue description input')
+        self.__createIssueButton = QtWidgets.QPushButton(self)
+        self.__createIssueButton.installEventFilter(self)
+        self.__issueCreatedLabel = QtWidgets.QLabel(self)
+        self.__hideIssueCreatedLabelTimer = QtCore.QTimer(self)
+
+    def reportWindowLayout(self):
+        self.__reportWindowFont.setPointSize(15)
+
+        self.__reportTipLabel.setGeometry(10, 10, 50, 50)
+        self.__reportTipLabel.setText(languageData['reportTipLabel'])
+        self.__reportTipLabel.setFont(self.__reportWindowFont)
+        self.__reportTipLabel.adjustSize()
+
+        self.__issueTitleInput.setPlaceholderText(languageData['issueTitleInputPlaceholder'])
+        self.__issueDescriptionInput.setPlaceholderText(languageData['issueDescriptionInputPlaceholder'])
+
+        self.__createIssueButton.setGeometry(QtCore.QRect(10, 260, 100, 30))
+        self.__createIssueButton.setFont(self.__reportWindowFont)
+        self.__createIssueButton.setStyleSheet(mainButtonStyle)
+        self.__createIssueButton.setFlat(False)
+        self.__createIssueButton.setObjectName('changeTranslationType')
+        self.__createIssueButton.setText(languageData['createIssueButtonText'])
+        self.__createIssueButton.clicked[bool].connect(self.__sendIssueData)
+
+        self.__issueCreatedLabel.setGeometry(130, 260, 50, 50)
+        self.__issueCreatedLabel.setText(languageData['issueCreated'])
+        self.__issueCreatedLabel.setFont(self.__reportWindowFont)
+        self.__issueCreatedLabel.adjustSize()
+        self.__issueCreatedLabel.setHidden(True)
+
+        self.__hideIssueCreatedLabelTimer.timeout.connect(lambda: self.__issueCreatedLabel.setHidden(True))
+
+    def __inputBoxHandler(self, positionX, positionY, width, height, name):
+        """
+        Template for main input boxes 
+
+        Args:
+            positionX (int): x cordinate of object position
+            positionY (int): y -//- 
+            width (int): width of the object
+            height (int): height -//-
+            name (string): name of the object
+
+        Returns:
+            self.inputBox (object): ready to use input box
+        """
+        self.__reportWindowFont.setPointSize(15)
+        inputBox = QtWidgets.QTextEdit(self)
+        inputBox.setGeometry(QtCore.QRect(positionX, positionY, width, height))
+        inputBox.setFont(self.__reportWindowFont)
+        inputBox.setStyleSheet(inputBoxStyle)
+        inputBox.setObjectName(name)
+        inputBox.verticalScrollBar().setStyleSheet(scrollBarStyle)
+        inputBox.horizontalScrollBar().setEnabled(False)
+        inputBox.setAcceptRichText(False)
+
+        return inputBox
+
+    def __sendIssueData(self):
+        if self.__issueTitleInput.toPlainText() != '' and self.__issueDescriptionInput.toPlainText() != '':
+            self.__sendIssueDataProcess = multiprocessing.Process(target=createIssue, 
+            args=(self.__issueTitleInput.toPlainText(), self.__issueDescriptionInput.toPlainText(),),
+            daemon=True, name='sending issue to Github')
+            self.__sendIssueDataProcess.start()
+
+            self.__issueCreatedLabel.setHidden(False)
+            self.__hideIssueCreatedLabelTimer.start(2000)
+
+            self.__issueTitleInput.setText('')
+            self.__issueDescriptionInput.setText('')
+
+    def eventFilter(self, obj, event):
+        """
+        Handler of the events happening within the app
+
+        Args:
+            obj (object): object e.g. input box 
+            event (type): type of event occuring
+
+        Returns:
+            reference to eventFilter, method of QEvent class
+        """
+        if obj is self.__createIssueButton:
+            if event.type() == QEvent.Type.MouseButtonPress:
+                mainButtonStyle = """
+                border: 2px solid grey;
+                border-radius: 20px;
+                color: white;
+                background-color: rgba(0, 0, 0, 0.13);"""
+                self.__createIssueButton.setStyleSheet(mainButtonStyle)
+            elif event.type() == QEvent.Type.HoverEnter:
+                mainButtonStyle = """
+                border: 2px solid grey;
+                border-radius: 20px;
+                color: black;
+                background-color: rgba(0, 0, 0, 0.13);"""
+                self.__createIssueButton.setStyleSheet(mainButtonStyle)
+            elif event.type() == QEvent.Type.HoverLeave:
+                mainButtonStyle = """
+                border: 2px solid black;
+                border-radius: 18px;
+                color: black;"""
+                self.__createIssueButton.setStyleSheet(mainButtonStyle)
+        
+        return super().eventFilter(obj, event) 
 
 
 class InfoWindow(QDialog):
@@ -581,18 +721,6 @@ class MorseApp(QMainWindow):
                 char = char.lower()
                 self.morseCode[value] = char
 
-        self.__inputBoxStyle = """
-        color: black;
-        background-color: white;
-        border: 2px solid black;
-        border-radius: 18px;
-        padding: 10px;"""
-
-        self.__changeTranslationButtonStyle = """
-        border: 2px solid black;
-        border-radius: 18px;
-        color: black;"""
-
         self.__sideButtonStyle = """
         QPushButton {
             background-color: transparent;
@@ -603,26 +731,6 @@ class MorseApp(QMainWindow):
             color: #ffffff; 
             background-color: #000000;
             border: 0px;
-        }"""
-
-        self.__scrollBarStyle = """
-        QScrollBar:vertical {
-            border: none;
-            background: none;
-            height: 0;
-            margin: 0 0 0 0;
-        }
-
-        QScrollBar::handle:vertical  {
-            background: none;
-            min-width: 0;
-        }
-
-        QScrollBar::add-line:vertical  {
-            background: none;
-            width: 0;
-            subcontrol-position: right;
-            subcontrol-origin: margin;
         }"""
 
         self.__inputBoxData = ''
@@ -731,7 +839,7 @@ class MorseApp(QMainWindow):
 
         self.__changeTranslationButton.setGeometry(QtCore.QRect(210, 260, 200, 70))
         self.__changeTranslationButton.setFont(self.__mainFont)
-        self.__changeTranslationButton.setStyleSheet(self.__changeTranslationButtonStyle)
+        self.__changeTranslationButton.setStyleSheet(mainButtonStyle)
         self.__changeTranslationButton.setFlat(False)
         self.__changeTranslationButton.setObjectName('changeTranslationType')
         self.__changeTranslationButton.setText(languageData['buttonModeChangeText'])
@@ -762,9 +870,9 @@ class MorseApp(QMainWindow):
         inputBox = QtWidgets.QTextEdit(self.__mainWidget)
         inputBox.setGeometry(QtCore.QRect(positionX, positionY, width, height))
         inputBox.setFont(self.__mainFont)
-        inputBox.setStyleSheet(self.__inputBoxStyle)
+        inputBox.setStyleSheet(inputBoxStyle)
         inputBox.setObjectName(name)
-        inputBox.verticalScrollBar().setStyleSheet(self.__scrollBarStyle)
+        inputBox.verticalScrollBar().setStyleSheet(scrollBarStyle)
         inputBox.horizontalScrollBar().setEnabled(False)
         inputBox.setAcceptRichText(False)
         
@@ -809,25 +917,25 @@ class MorseApp(QMainWindow):
                 self.__polishToMorse()
         elif obj is self.__changeTranslationButton:
             if event.type() == QEvent.Type.MouseButtonPress:
-                self.__changeTranslationButtonStyle = """
+                mainButtonStyle = """
                 border: 2px solid grey;
                 border-radius: 20px;
                 color: white;
                 background-color: rgba(0, 0, 0, 0.13);"""
-                self.__changeTranslationButton.setStyleSheet(self.__changeTranslationButtonStyle)
+                self.__changeTranslationButton.setStyleSheet(mainButtonStyle)
             elif event.type() == QEvent.Type.HoverEnter:
-                self.__changeTranslationButtonStyle = """
+                mainButtonStyle = """
                 border: 2px solid grey;
                 border-radius: 20px;
                 color: black;
                 background-color: rgba(0, 0, 0, 0.13);"""
-                self.__changeTranslationButton.setStyleSheet(self.__changeTranslationButtonStyle)
+                self.__changeTranslationButton.setStyleSheet(mainButtonStyle)
             elif event.type() == QEvent.Type.HoverLeave:
-                self.__changeTranslationButtonStyle = """
+                mainButtonStyle = """
                 border: 2px solid black;
                 border-radius: 18px;
                 color: black;"""
-                self.__changeTranslationButton.setStyleSheet(self.__changeTranslationButtonStyle)
+                self.__changeTranslationButton.setStyleSheet(mainButtonStyle)
         elif obj is self.__morseInputBox:
             if event.type() == QEvent.Type.KeyRelease:
                 self.__morseToPolish()
@@ -933,6 +1041,7 @@ class MorseApp(QMainWindow):
             self.__reportWindow = ReportWindow()
 
         self.__reportWindow.show()
+        self.__reportWindow.reportWindowLayout()
         self.__reportWindow.activateWindow()
 
     def __changeTranslationType(self):
