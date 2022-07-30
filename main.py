@@ -1,3 +1,4 @@
+import sys
 import requests
 import json
 import pyttsx3 as tts
@@ -13,7 +14,7 @@ from pydub import AudioSegment
 import multiprocessing
 from os import path
 
-appVersion = '300720221'
+appVersion = '300720222'
 language = 'English'
 textReadingSpeed = 100
 languagePackFile = 'englishLanguagePack.txt'
@@ -21,6 +22,22 @@ languageData = {}
 readEngine = tts.init()
 AudioSegment.converter = 'ffmpeg.exe'
 AudioSegment.ffmpeg = 'ffmpeg.exe'
+
+
+def resourcePath(relativePath):
+    """
+    Gets correct path to resource
+
+    Args:
+        relative_path (str): expected path
+    """
+    try:
+        basePath = sys._MEIPASS
+    except Exception:
+        basePath = path.abspath(".")
+    
+    return path.join(basePath, relativePath)
+
 
 inputBoxStyle = """
     color: black;
@@ -54,7 +71,7 @@ mainButtonStyle = """
         border-radius: 18px;
         color: black;"""
 
-with open('resources\\data\\settings.txt', 'r') as settingsFile:
+with open(resourcePath('resources\\data\\settings.txt'), 'r') as settingsFile:
     for line in settingsFile.readlines():
         setting, settingValue = line.split()
         
@@ -66,7 +83,7 @@ with open('resources\\data\\settings.txt', 'r') as settingsFile:
 if language == 'Polski':
     languagePackFile = 'polishLanguagePack.txt'
 
-with open('resources\\data\\{}'.format(languagePackFile), 'r', encoding='UTF-8') as languagePackFile:
+with open(resourcePath('resources\\data\\{}'.format(languagePackFile)), 'r', encoding='UTF-8') as languagePackFile:
     for line in languagePackFile.readlines():
         line = line.split(';')
         languageData[line[0]] = line[1].strip()
@@ -77,7 +94,18 @@ if system() == 'Windows':
 else:
     pass
 
+
 def checkRegex(data, stringPattern):
+    """
+    Checks if text matches the pattern
+
+    Args:
+        data (str): text data
+        stringPattern (str): pattern
+
+    Returns:
+        bool: True whether text matches the pattern
+    """
     pattern = re.compile(r''+stringPattern, re.IGNORECASE)
     return pattern.match(data)
 
@@ -136,9 +164,9 @@ def readMorse(morseCode):
     """
     for char in morseCode:
         if char == '.':
-            playsound('resources\\sounds\\morseCodeShort.mp3')
+            playsound(resourcePath('resources\\sounds\\morseCodeShort.mp3'))
         elif char == '-':
-            playsound('resources\\sounds\\morseCodeLong.mp3')
+            playsound(resourcePath('resources\\sounds\\morseCodeLong.mp3'))
 
 
 def saveMorseCode(morseCode):
@@ -152,8 +180,8 @@ def saveMorseCode(morseCode):
         None
     """
     pathToSave = 'output\\morseSequence.mp3'
-    morseCodeLong = AudioSegment.from_file('resources\\sounds\\morseCodeLong.mp3', format='mp3')
-    morseCodeShort = AudioSegment.from_file('resources\\sounds\\morseCodeShort.mp3', format='mp3')
+    morseCodeLong = AudioSegment.from_file(resourcePath('resources\\sounds\\morseCodeLong.mp3'), format='mp3')
+    morseCodeShort = AudioSegment.from_file(resourcePath('resources\\sounds\\morseCodeShort.mp3'), format='mp3')
     morseCodeSequence = None
 
     if path.exists('output\\') == False:
@@ -175,13 +203,20 @@ def saveMorseCode(morseCode):
 
 
 def createIssue(title, body):
+    """
+    Takes data and creates issue, then sends it to Github repository
+
+    Args:
+        title (str): issue title
+        body (str): issue description
+    """
     headers = {'Authorization': 'token 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'}
     url = 'https://api.github.com/repos/jerryntom/morsepy/issues'
     dataPack = [{'title': title, 'body': body}]
 
     for data in dataPack:
         requests.post(url, data=json.dumps(data), headers=headers)
-    
+
 
 class MenuWindow(QWidget):
     """
@@ -195,17 +230,17 @@ class MenuWindow(QWidget):
         Initiation of variables for MenuWindow class 
         """
         super().__init__()
-        self.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
+        self.setWindowIcon(QtGui.QIcon(resourcePath('resources\\images\\icon.png')))
         self.setFixedSize(600, 300)
         self.__background = QtWidgets.QLabel(self)
         self.__menuWindowLayout()
 
     def __menuWindowLayout(self):        
         self.__background.setGeometry(QtCore.QRect(0, 0, 600, 300))
-        self.__background.setPixmap(QtGui.QPixmap('resources/images/background.png'))
+        self.__background.setPixmap(QtGui.QPixmap(resourcePath('resources/images/background.png')))
         self.__background.setObjectName('background')
         self.__background.setMouseTracking(True)
-
+    
 
 class SettingsWindow(MenuWindow):
     """
@@ -280,7 +315,7 @@ class SettingsWindow(MenuWindow):
         """ 
         self.__settings = {}
     
-        with open('resources\\data\\settings.txt', 'r') as settingsFile:
+        with open(resourcePath('resources\\data\\settings.txt'), 'r') as settingsFile:
             for line in settingsFile.readlines():
                 line = line.split()
                 self.__settings[line[0]] = line[1] 
@@ -330,7 +365,7 @@ class SettingsWindow(MenuWindow):
             self.__languageChoice.currentTextChanged.connect(self.__changeLanguage)
 
         if self.__languageChoice is not None:
-            with open('resources\\data\\settings.txt', 'r') as settingsFile:
+            with open(resourcePath('resources\\data\\settings.txt'), 'r') as settingsFile:
                 for line in settingsFile.readlines():
                     setting, settingValue = line.split()
 
@@ -397,7 +432,7 @@ class SettingsWindow(MenuWindow):
             None
         """
         if self._textReadingSpeedSlider.value() != 0:
-            with open('resources\\data\\settings.txt', 'w') as settingsFile:
+            with open(resourcePath('resources\\data\\settings.txt'), 'w') as settingsFile:
                 settingsFile.write('textReadingSpeed' + ' ' + str(self._textReadingSpeedSlider.value()))
                 settingsFile.write('\nlanguage' + ' ' + str(self.__languageChoice.currentText()))
 
@@ -424,6 +459,12 @@ class AboutWindow(MenuWindow):
         self.__creatorInfoLinkLabel = QtWidgets.QLabel(self)
 
     def aboutWindowLayout(self):
+        """
+        Creates layout for AboutWindow class 
+
+        Returns:
+            None
+        """ 
         self.__aboutWindowFont.setPointSize(20)
 
         self.__contributionLabel.setGeometry(50, 30, 50, 50)
@@ -432,7 +473,7 @@ class AboutWindow(MenuWindow):
         self.__contributionLabel.adjustSize()
 
         self.__contributionImageLabel.setGeometry(80, 70, 256, 256)
-        self.__contributionImageLabel.setPixmap(QtGui.QPixmap('resources\\images\\contribution.png').scaled(180, 180, transformMode=QtCore.Qt.TransformationMode.SmoothTransformation))
+        self.__contributionImageLabel.setPixmap(QtGui.QPixmap(resourcePath('resources\\images\\contribution.png')).scaled(180, 180, transformMode=QtCore.Qt.TransformationMode.SmoothTransformation))
 
         self.__aboutWindowFont.setPointSize(15)
 
@@ -461,6 +502,15 @@ class AboutWindow(MenuWindow):
         self.__creatorInfoLinkLabel.adjustSize()
 
     def __openURL(self, URL):
+        """
+        Opens URL in web browser
+
+        Args:
+            URL (str): website link
+
+        Returns:
+            None
+        """
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(URL))
 
 
@@ -487,6 +537,12 @@ class ReportWindow(MenuWindow):
         self.__hideIssueCreatedLabelTimer = QtCore.QTimer(self)
 
     def reportWindowLayout(self):
+        """
+        Creates layout for ReportWindow class 
+
+        Returns:
+            None
+        """ 
         self.__reportWindowFont.setPointSize(15)
 
         self.__reportTipLabel.setGeometry(10, 10, 50, 50)
@@ -540,6 +596,12 @@ class ReportWindow(MenuWindow):
         return inputBox
 
     def __sendIssueData(self):
+        """
+        Issue sending handler
+
+        Returns:
+            None
+        """ 
         if self.__issueTitleInput.toPlainText() != '' and self.__issueDescriptionInput.toPlainText() != '':
             self.__sendIssueDataProcess = multiprocessing.Process(target=createIssue, 
             args=(self.__issueTitleInput.toPlainText(), self.__issueDescriptionInput.toPlainText(),),
@@ -606,7 +668,7 @@ class InfoWindow(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle(infoTitle)
-        self.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
+        self.setWindowIcon(QtGui.QIcon(resourcePath('resources\\images\\icon.png')))
         self.__infoButton = QtWidgets.QDialogButtonBox.StandardButton.Ok
         self.__buttonBox = QtWidgets.QDialogButtonBox(self.__infoButton)
         self.__verticalBoxLayout = QtWidgets.QVBoxLayout()
@@ -663,7 +725,7 @@ class ErrorWindow(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle(errorTitle)
-        self.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
+        self.setWindowIcon(QtGui.QIcon(resourcePath('resources\\images\\icon.png')))
 
         self.__infoButton = QtWidgets.QDialogButtonBox.StandardButton.Ok
         self.__buttonBox = QtWidgets.QDialogButtonBox(self.__infoButton)
@@ -712,7 +774,7 @@ class MorseApp(QMainWindow):
         self.morseCode = dict()
         self.__validateAppDependencies()
 
-        with open('resources\\data\\morseValues.txt', 'r', encoding='UTF-8') as file:
+        with open(resourcePath('resources\\data\\morseValues.txt'), 'r', encoding='UTF-8') as file:
             for line in file.readlines():
                 char, value = line.split()
 
@@ -776,13 +838,13 @@ class MorseApp(QMainWindow):
         Returns:
             None
         """
-        filePaths = {'ffmpeg.exe': 1, 'ffprobe.exe': 1, 
-        'resources\\data\\morseValues.txt': 1, 'resources\\images\\background.png': 1,
-        'resources\\images\\readButton.png': 1, 'resources\\images\\saveSoundButton.png': 1, 
-        'resources\\images\\stopReadButton.png': 1, 'resources\\sounds\\morseCodeLong.mp3': 1, 
-        'resources\\sounds\\morseCodeShort.mp3': 1, 'resources\\images\\icon.png': 1,
-        'resources\\data\\settings.txt': 1, 'resources\\data\englishLanguagePack.txt': 1,
-        'resources\\data\polishLanguagePack.txt': 1}
+        filePaths = {resourcePath('ffmpeg.exe'): 1, resourcePath('ffprobe.exe'): 1, 
+        resourcePath('resources\\data\\morseValues.txt'): 1, resourcePath('resources\\images\\background.png'): 1,
+        resourcePath('resources\\images\\readButton.png'): 1, resourcePath('resources\\images\\saveSoundButton.png'): 1, 
+        resourcePath('resources\\images\\stopReadButton.png'): 1, resourcePath('resources\\sounds\\morseCodeLong.mp3'): 1, 
+        resourcePath('resources\\sounds\\morseCodeShort.mp3'): 1, resourcePath('resources\\images\\icon.png'): 1,
+        resourcePath('resources\\data\\settings.txt'): 1, resourcePath('resources\\data\englishLanguagePack.txt'): 1,
+        resourcePath('resources\\data\polishLanguagePack.txt'): 1}
 
         missingFilesBegin = 'Some files are missing\n\n'
         missingFileFindInfo1 = '\nYou can find them in project repository'
@@ -816,14 +878,15 @@ class MorseApp(QMainWindow):
         Args:
             mainWindow (object): main window of the app  
         """
-        mainWindow.setObjectName('MainWindow')
-        mainWindow.setEnabled(True)
-        mainWindow.setFixedSize(600, 600)
+        self.__mainWindow = mainWindow
+        self.__mainWindow.setObjectName('MainWindow')
+        self.__mainWindow.setEnabled(True)
+        self.__mainWindow.setFixedSize(600, 600)
 
         self.__mainWidget.setObjectName('centralwidget')
 
         self.__background.setGeometry(QtCore.QRect(0, 0, 600, 600))
-        self.__background.setPixmap(QtGui.QPixmap('resources/images/background.png'))
+        self.__background.setPixmap(QtGui.QPixmap(resourcePath('resources/images/background.png')))
         self.__background.setObjectName('background')
         self.__background.setMouseTracking(True)
 
@@ -832,7 +895,7 @@ class MorseApp(QMainWindow):
         self.__topMenu.addAction(languageData['aboutMenuBar'], lambda: self.__showAboutWindow())
         self.__topMenu.addAction(languageData['reportMenuBar'], lambda: self.__showReportWindow())
 
-        mainWindow.setMenuBar(self.__topMenu)
+        self.__mainWindow.setMenuBar(self.__topMenu)
 
         self.__mainFont.setPointSize(25)
         self.__mainFont.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferAntialias)
@@ -895,7 +958,7 @@ class MorseApp(QMainWindow):
         sideButton = QtWidgets.QPushButton(self.__mainWidget)
         sideButton.setGeometry(positionX, positionY, width, height)
         sideButton.setStyleSheet(self.__sideButtonStyle)
-        sideButton.setIcon(QtGui.QIcon('resources\\images\\{}'.format(image)))
+        sideButton.setIcon(QtGui.QIcon(resourcePath('resources\\images\\{}').format(image)))
         sideButton.setIconSize(QtCore.QSize(25, 25))
         sideButton.setToolTip(toolTip)
 
@@ -1146,7 +1209,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)
     MainWindow = QtWidgets.QMainWindow()
     MainWindow.setWindowTitle('MorsePy')
-    MainWindow.setWindowIcon(QtGui.QIcon('resources\\images\\icon.png'))
+    MainWindow.setWindowIcon(QtGui.QIcon(resourcePath('resources\\images\\icon.png')))
     userInterface = MorseApp()
     userInterface.layout(MainWindow)
     MainWindow.show()
