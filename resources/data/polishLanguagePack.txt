@@ -22,3 +22,8 @@ repositoryInfoLabel;Więcej informacji o projekcie
 repositoryLinkLabel;repozytorium
 creatorInfoLabel;Twórca
 creatorInfoLinkLabel;profil
+reportTipLabel;Wpisz informacje dotyczące twojego zapytania
+issueTitleInputPlaceholder;Tytuł zapytania
+issueDescriptionInputPlaceholder;Opis zapytania
+createIssueButtonText;Wyślij
+issueCreated;Zapytanie zostało utworzone, dziękuję!

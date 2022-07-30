@@ -22,3 +22,8 @@ repositoryInfoLabel;More info about the project
 repositoryLinkLabel;repository
 creatorInfoLabel;Creator
 creatorInfoLinkLabel;profile
+reportTipLabel;Enter information about your issue
+issueTitleInputPlaceholder;Issue title
+issueDescriptionInputPlaceholder;Issue description
+createIssueButtonText;Send
+issueCreated;Issue has been created, thank you!
