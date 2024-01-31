@@ -18,8 +18,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
+lib/
 parts/
 sdist/
 var/
@@ -193,8 +193,8 @@ cython_debug/
 ffmpeg.exe
 ffprobe.exe
 
-# Output
-
-*.mp3
+# Idea
+.idea
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
+resources/data/settings.txt

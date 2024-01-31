@@ -1,4 +1,4 @@
-voice;0
+voice;1
 textInputPlaceholder;Enter text to input
 buttonModeChangeText;Switch
 morseInputPlaceholder;Enter morse code to translate
