@@ -5,7 +5,7 @@
 Support open source software and help me in further development :) 
 
 ## About project :information_source:
-MorsePy is a plain morse-text translator. Just write some text or morse code in certain input box and see how it works.\
+MorsePy is a plain morse-text translator. Just write some text or morse code in specific input box and see how it works.\
 If you have some questions or suggestions please contact with me: jaroslawtomczuk.ofi@gmail.com
 
 ## How to use :question:
